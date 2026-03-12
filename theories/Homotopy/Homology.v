@@ -20,5 +20,3 @@ Record HomologyTheory `{Integers Z} := {
     C_susp_fmap : forall {z : Z} {X Y : pType} (f : X ->* Y) (x : C (1 + z) (psusp X)),
       fmap (C z) f ∘ C_susp X == C_susp Y ∘ fmap (C (1 + z)) (fmap psusp f);
     }.
-
-
