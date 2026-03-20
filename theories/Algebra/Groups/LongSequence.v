@@ -28,10 +28,8 @@ Record LSMorphism {N : SuccStr} (A B : GrpLS N) : Type := {
 (** Isomorphism of long sequences *)
 Record LSIsomorphism {N : SuccStr} {A B : GrpLS N} (ls_morphism : LSMorphism A B) : Type := {
     ls_iso_mor :> LSMorphism;
-    isequiv_hom : forall n, IsEquiv ls_iso_mor n;
+    isequiv_hom : forall n, IsEquiv (grp_hom ls_iso_mor n);
 }.
-
-Coercion LSIsomorphism 
 
 
 (** Isomorphism of long sequences preserves exactness *)
@@ -49,7 +47,6 @@ Proof.
 
   destruct ls_iso as [H_grp_iso H_sq_commute].
   set (phi_n := H_grp_iso n).
-n)
 
-  B_isexact : forall n, GrpIsExact (ls_fn B n.+1) (ls_fn B n). 
+  (* forall n, GrpIsExact (ls_fn B n.+1) (ls_fn B n). *)
 Qed.
