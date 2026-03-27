@@ -22,8 +22,7 @@ Proof.
   snapply Build_pMap.
   - napply (functor_pushout h k l p q).
   - simpl.
-    apply (ap pushl).
-    exact (point_eq k).
+    exact (ap pushl (point_eq k)).
 Defined.
 
 (** *** The legs of a pointed pushout are pointed. *)
