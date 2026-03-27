@@ -40,7 +40,7 @@ Section MvEquiv.
         snapply wedge_ind_FFl. 
         * intro. reflexivity.
         * intro. exact (merid (X := pointed_type Z) (point Z))^.
-        * cbn. refine _^.
+        * cbn. symmetry.
           napply (concat_l
                     (whiskerR (ap (ap _) (functor_pushout_beta_pglue _)) (merid pt)^)).
           napply (concat_l (whiskerR
