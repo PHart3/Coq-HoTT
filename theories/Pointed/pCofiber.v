@@ -13,11 +13,11 @@ Definition pcofiber {X Y : pType} (f : X ->* Y)
 Definition ptd_cofib {X Y : pType} (f : X ->* Y) : Y ->* pcofiber f
     := Build_pMap (cofib f) ((ap (cofib f) (point_eq f))^ @ cfglue f pt).
 
-(** *We have a pointed equivalence between the cofiber of X \/ Y -> X ⊔_Z Y and Susp Z *)
+(** We have a pointed equivalence between the cofiber of X \/ Y -> X ⊔_Z Y and Susp Z. *)
 
-Section MvEquiv.
+Section CofSuspEquiv.
 
-  (** ** Path algebra helper lemma *)
+  (** Path algebra helper lemma *)
   Definition ap_compose_inv_concat_compose_inv2 {A B C D : Type}
     (f : B -> C) (g : A -> B) (h : D -> B)
     {x y : A} {u v : D} (p : x = y) (q : _ = _) (r : u = v) :
@@ -29,9 +29,9 @@ Section MvEquiv.
     exact (ap_pp f 1 q).
   Defined.
 
-  Context {X Y Z : pType} {f : Z ->* X} {g : Z ->* Y}.
+  Context {X Y Z : pType} (f : Z ->* X) (g : Z ->* Y).
 
-  Definition mv_equiv : pcofiber (Y := ppushout f g) reglue ->* psusp Z.
+  Definition cof_susp_equiv : pcofiber (Y := ppushout f g) reglue ->* psusp Z.
   Proof.
     snapply Build_pMap.
     - snapply (cofiber_rec reglue).
@@ -59,7 +59,7 @@ Section MvEquiv.
     - reflexivity.
   Defined.
 
-  Definition mv_equiv_rev : psusp Z ->* pcofiber (Y := ppushout f g) reglue.
+  Definition cof_susp_equiv_rev : psusp Z ->* pcofiber (Y := ppushout f g) reglue.
   Proof.
     snapply Build_pMap.
     - refine (Susp_rec pt pt _). intro z. exact
@@ -69,4 +69,4 @@ Section MvEquiv.
     - simpl. reflexivity.
   Defined.
       
-End MvEquiv.
+End CofSuspEquiv.
