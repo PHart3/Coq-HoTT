@@ -1,5 +1,3 @@
-
-
 From HoTT Require Import Basics Types WildCat.Core Truncations.
 Require Import Groups.Group Subgroup ExactSeq.
 Require Import SuccessorStructure.
@@ -67,7 +65,6 @@ Proof.
     ker_sub_im := _;
   |}).
   - intros b y.
-    cbn.
     strip_truncations.
     destruct y as [x p].
     set (a2 := (ls_equiv ls_iso n.+1.+1)^-1 x).
@@ -75,29 +72,22 @@ Proof.
     set (q := (eissect (ls_equiv ls_iso n.+1) ((ls_fn A n.+1) a2))^
                 @ (ap (ls_equiv ls_iso n.+1)^-1 ((sq_commute _ _ ls_iso n.+1 a2)
                                                    @ (ap (ls_fn B n.+1) (eisretr (ls_equiv ls_iso n.+1.+1) x) @ p)))).
-
     set (ker_witness := im_sub_ker _ _ (is_exact_seq A (@is_exact N A) n) a1 (tr (a2; q))).
     exact (ap (ls_fn B n) (eisretr (ls_equiv ls_iso n.+1) b)^
              @ (sq_commute _ _ ls_iso n a1)^
                @ ap (ls_equiv ls_iso n) ker_witness
                  @ grp_homo_unit (ls_equiv ls_iso n)).
-    
   - intros b p.
-    cbn.
-    cbn in p.
-    set (a1 := (ls_equiv ls_iso n.+1)^-1 b).
     set (q := (eissect (ls_equiv ls_iso n) ((ls_fn A n) ((ls_equiv ls_iso n.+1)^-1 b)))^
                 @ (ap (ls_equiv ls_iso n)^-1 ((sq_commute _ _ ls_iso n ((ls_equiv ls_iso n.+1)^-1 b))
                                                 @ ((ap (ls_fn B n) (eisretr (ls_equiv ls_iso n.+1) b)) @ p)))
                    @ (grp_homo_unit (grp_iso_inverse (ls_equiv ls_iso n)))).
     set (im_witness := ker_sub_im _ _ (is_exact_seq A (@is_exact N A) n) ((ls_equiv ls_iso n.+1)^-1 b) q).
-    cbn in im_witness.
-    set (myfn := (fun (u : {x : A n.+1.+1 & ls_fn A n.+1 x = (ls_equiv ls_iso n.+1)^-1 b}) =>
-            match u return (Trunc (-1) {x : B n.+1.+1 & (ls_fn B n.+1 x) = b}) with
-            | (x1; path1) => tr ((ls_equiv ls_iso n.+1.+1 x1); (sq_commute _ _ ls_iso n.+1 x1)^
-                                                                 @ (ap (ls_equiv ls_iso n.+1) path1) @
+    set (trunc_rec_fn := (fun (w : {x : A n.+1.+1 & ls_fn A n.+1 x = (ls_equiv ls_iso n.+1)^-1 b}) =>
+            match w return (Trunc (-1) {x : B n.+1.+1 & (ls_fn B n.+1 x) = b}) with
+            | (w; wpath) => tr ((ls_equiv ls_iso n.+1.+1 w); (sq_commute _ _ ls_iso n.+1 w)^
+                                                                 @ (ap (ls_equiv ls_iso n.+1) wpath) @
                                                                    (eisretr (ls_equiv ls_iso n.+1) b))
             end)).
-    exact (Trunc_rec myfn im_witness).
-    
+    exact (Trunc_rec trunc_rec_fn im_witness).    
 Qed.
