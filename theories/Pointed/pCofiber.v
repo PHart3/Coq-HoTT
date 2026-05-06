@@ -40,22 +40,22 @@ Section CofSuspEquiv.
         snapply wedge_ind_FFl. 
         * intro. reflexivity.
         * intro. exact (merid (X := pointed_type Z) (point Z))^.
-        * cbn. symmetry.
-          napply (concat_l
-                    (whiskerR (ap (ap _) (functor_pushout_beta_pglue _)) (merid pt)^)).
-          napply (concat_l (whiskerR
-                              (ap_compose_inv_concat_compose_inv2 _ pushl pushr
-                                 (point_eq f) (pglue pt) (point_eq g)) (merid pt)^)).
-          napply (concat_l (whiskerR
-                              (ap (fun p => _ @ p @ _) (functor_pushout_beta_pglue pt))
-                              (merid pt)^)).
-          napply (concat_l (whiskerR
-                              (ap011 (fun p q => (p @ ((1 @ merid pt) @ 1)) @ q)
-                                 (ap_V _ (point_eq f) @ ap _ (ap_const (point_eq f) North))
-                                 (ap_const (point_eq g) South)) (merid pt)^)).
+        * cbn.
+          rhs napply (whiskerR (ap (ap _) (functor_pushout_beta_pglue _)) (merid pt)^).
+          rhs napply (whiskerR
+                        (ap_compose_inv_concat_compose_inv2 _ pushl pushr
+                           (point_eq f) (pglue pt) (point_eq g)) (merid pt)^).
+          rhs napply (whiskerR
+                        (ap (fun p => _ @ p @ _) (functor_pushout_beta_pglue pt))
+                        (merid pt)^).
+          rhs napply (whiskerR
+                        (ap011 (fun p q => (p @ ((1 @ merid pt) @ 1)) @ q)
+                           (ap_V _ (point_eq f) @ ap _ (ap_const (point_eq f) North))
+                           (ap_const (point_eq g) South))
+                        (merid pt)^).
           assert (units_lemma : forall A {x y : A} {p : x = y},
-                     (1 @ ((1 @ p) @ 1)) @ 1 = p) by (destruct p; reflexivity).
-          exact (whiskerR (units_lemma _ _ _ _) (merid pt)^ @ concat_pV (merid pt)).
+                     1 = ((1^ @ ((1 @ p) @ 1)) @ 1) @ p^) by (destruct p; reflexivity).
+          exact (units_lemma _ _ _ (merid pt)).
     - reflexivity.
   Defined.
 
