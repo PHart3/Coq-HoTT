@@ -24,7 +24,7 @@ Section CofSuspEquiv.
       ap f ((ap g p^ @ q) @ ap h (r^)^) = ap (f o g) p^ @ ap f q @ ap (f o h) r.
   Proof.
     destruct p; destruct r. cbn.
-    apply (concat_l (ap_pp f (1 @ q) 1)). cbn.
+    apply (concat_l (ap_pp f (1 @ q) 1)).
     refine (whiskerR _ 1).
     exact (ap_pp f 1 q).
   Defined.
