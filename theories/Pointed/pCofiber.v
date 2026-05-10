@@ -17,12 +17,22 @@ Definition ptd_cofib {X Y : pType} (f : X ->* Y) : Y ->* pcofiber f
 (** Iterated pointed cofibers *)
 
 (* We construct the iterated cofiber map (packaged with its domain and codomain). *)
-Definition iderated_ptd_cofib {X Y : pType} (f : X ->* Y) (n : nat) : { ST : pType * pType & (fst ST) ->* (snd ST) }.
+Definition iterated_ptd_cofib {X Y : pType} (f : X ->* Y) (n : nat) :
+  { ST : pType * pType & (fst ST) ->* (snd ST) }.
 Proof.
   napply (nat_iter n _ _).
   + exists (X, Y). exact f.
   + intros [[S T] h]. exists (T, pcofiber h). exact (ptd_cofib h).
 Defined.
+
+(* some useful cases of iterated_ptd_cofib *)
+
+Definition ptd_cofib_2 {X Y : pType} (f : X ->* Y) : (pcofiber f) ->* (pcofiber (ptd_cofib f))
+  := (iterated_ptd_cofib f 2).2.
+
+Definition ptd_cofib_3 {X Y : pType} (f : X ->* Y) :
+  (pcofiber (ptd_cofib f)) ->* (pcofiber (ptd_cofib (ptd_cofib f)))
+  := (iterated_ptd_cofib f 3).2.
 
 (** We have a pointed equivalence between the cofiber of X \/ Y -> X ⊔_Z Y and Susp Z. *)
 
