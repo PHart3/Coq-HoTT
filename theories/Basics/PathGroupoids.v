@@ -486,6 +486,13 @@ Proof.
   apply concat_A1p.
 Defined.
 
+Definition concat_Aconstp {A B : Type} {f : A -> B} {z : B} (p : forall x, f x = z) {x y : A} (q : x = y)
+  : (p x) = (ap f q) @ (p y)
+  :=
+  match q with
+    | idpath => (concat_1p _)^
+  end.
+
 Definition concat_pA1 {A : Type} {f : A -> A} (p : forall x, x = f x) {x y : A} (q : x = y) :
   (p x) @ (ap f q) =  q @ (p y)
   :=
