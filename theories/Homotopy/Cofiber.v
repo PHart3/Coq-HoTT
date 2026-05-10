@@ -169,3 +169,32 @@ Proof.
     rapply (isconnected_conn_map_isconnected (n.+1) (fiber_to_path_cofiber f y)).
     rapply (isconnected_fiber_to_cofiber n 0).
 Defined.
+
+(** ** The cofiber of an equivalence is contractible. *)
+
+Lemma contr_cofiber_equivalence {X Y : Type} {f : X -> Y} `{fe : IsEquiv X Y f}
+  : Contr (Cofiber f).
+Proof.
+  snapply Build_Contr.
+  - exact (cf_apex f).
+  - snapply (cofiber_ind f _).
+    + intro y.
+      lhs_V napply (cfglue f (f^-1 y)).
+      exact (ap (cofib f) (eisretr f y)).
+    + exists idpath. intro x.
+      lhs napply (transport_paths_idr (cfglue f x)
+                    ((cfglue f (f^-1 (f x)))^ @ ap (cofib f) (eisretr f (f x)))).
+      lhs napply (whiskerR _ (cfglue f x)).
+      * lhs napply (whiskerR _ (ap (cofib f) (eisretr f (f x)))).
+        -- lhs napply (ap inverse (concat_Aconstp (cfglue f) (eissect f x))).
+           lhs napply (inv_pp _ _).
+           lhs napply (whiskerL ((cfglue f x)^)
+                         (ap inverse (ap_compose f (cofib f) (eissect f x)
+                                        @ ap02 (cofib f) ((eisadj f x)^)))).
+           
+           reflexivity.
+        -- lhs napply (concat_pp_p _ _ _).
+           lhs napply (whiskerL ((cfglue f x)^) (concat_Vp (ap (cofib f) (eisretr f (f x))))).
+           exact (concat_p1 ((cfglue f x)^)).
+      * exact (concat_Vp (cfglue f x)).
+Qed.

@@ -73,6 +73,13 @@ Proof.
   destruct p. symmetry; apply concat_p1.
 Defined.
 
+Definition transport_paths_idr {A : Type} {y1 y2 x : A}
+  (p : y1 = y2) (q : x = y1)
+  : transport (fun y => x = y) p q = q @ p.
+Proof.
+  destruct p. symmetry; apply concat_p1.
+Defined.
+
 (** *** 2 functions *)
 
 Definition transport_paths_FFl {A B C : Type} {f : A -> B} {g : B -> C}
