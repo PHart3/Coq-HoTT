@@ -1,5 +1,6 @@
 From HoTT Require Import Basics.
-Require Import Pointed.Core pSusp pPushout.
+Require Import Types.Unit.
+Require Import Pointed.Core pSusp pPushout pEquiv.
 Require Import Homotopy.Cofiber Wedge Suspension.
 Require Import Colimits.Pushout.
 Require Import Spaces.Nat.Core.
@@ -8,7 +9,7 @@ Local Open Scope pointed_scope.
 
 (** * Pointed cofibers *)
 
-Definition pcofiber {X Y : pType} (f : X ->* Y) : pType
+Definition pcofiber {X Y : Type} (f : X -> Y) : pType
   := [Cofiber f, cf_apex f].
 
 Definition ptd_cofib {X Y : pType} (f : X ->* Y) : Y ->* pcofiber f
@@ -24,6 +25,11 @@ Proof.
   + exists (X, Y). exact f.
   + intros [[S T] h]. exists (T, pcofiber h). exact (ptd_cofib h).
 Defined.
+
+(** The cofiber of an equivalence is equivalent to the zero object. *)
+
+Definition unit_cofiber_equivalence {X Y : Type} {f : X -> Y} `{fe : IsEquiv X Y f}
+  : pEquiv (pcofiber f) pUnit := Build_pEquiv' (@equiv_contr_unit _ contr_cofiber_equivalence) idpath.
 
 (* some useful cases of iterated_ptd_cofib *)
 
