@@ -2,16 +2,27 @@ From HoTT Require Import Basics.
 Require Import Pointed.Core pSusp pPushout.
 Require Import Homotopy.Cofiber Wedge Suspension.
 Require Import Colimits.Pushout.
+Require Import Spaces.Nat.Core.
 
 Local Open Scope pointed_scope.
 
 (** * Pointed cofibers *)
 
-Definition pcofiber {X Y : pType} (f : X ->* Y)
+Definition pcofiber {X Y : pType} (f : X ->* Y) : pType
   := [Cofiber f, cf_apex f].
 
 Definition ptd_cofib {X Y : pType} (f : X ->* Y) : Y ->* pcofiber f
     := Build_pMap (cofib f) ((ap (cofib f) (point_eq f))^ @ cfglue f pt).
+
+(** Iterated pointed cofibers *)
+
+(* We construct the iterated cofiber map (packaged with its domain and codomain). *)
+Definition iderated_ptd_cofib {X Y : pType} (f : X ->* Y) (n : nat) : { ST : pType * pType & (fst ST) ->* (snd ST) }.
+Proof.
+  napply (nat_iter n _ _).
+  + exists (X, Y). exact f.
+  + intros [[S T] h]. exists (T, pcofiber h). exact (ptd_cofib h).
+Defined.
 
 (** We have a pointed equivalence between the cofiber of X \/ Y -> X ⊔_Z Y and Susp Z. *)
 

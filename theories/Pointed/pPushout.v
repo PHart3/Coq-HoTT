@@ -39,7 +39,7 @@ Section PtdLegsPO.
   
 End PtdLegsPO.
 
-(** *** Some useful span maps. *)
+(** *** Some useful span maps *)
 
 Section SpanTransform.
   
@@ -57,3 +57,27 @@ Section SpanTransform.
   Defined.
   
 End SpanTransform.
+
+(** *** Symmetry of pointed pushouts *)
+
+Section PPushoutSym.
+  
+  Context {X Y Z : pType} {f : Z ->* X} {g : Z ->* Y}.
+
+  Definition ppushout_sym_map : ppushout f g ->* ppushout g f.
+  Proof.
+    exists pushout_sym_map. cbn.
+    lhs_V napply (ap pushr).
+    - exact (point_eq f).
+    - lhs_V napply (pglue pt).
+      exact (ap pushl (point_eq g)).
+  Defined.
+  
+  Definition ppushout_sym : ppushout f g <~>* ppushout g f.
+  Proof.
+    snapply Build_pEquiv.
+    - exact ppushout_sym_map.
+    - cbn. exact (equiv_isequiv pushout_sym).
+  Defined.
+
+End PPushoutSym.

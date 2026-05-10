@@ -56,6 +56,15 @@ Proof.
   - exact null.2.
 Defined.
 
+Definition cofiber_ind_beta_cfglue {X Y : Type} {f : X -> Y} {P : Cofiber f -> Type}
+  {g : forall y, P (cofib f y)}
+  {null : exists b, forall x, transport P (cfglue f x) (g (f x)) = b}
+  (a : X)
+  : apD (cofiber_ind f P g null) (cfglue f a) = null.2 a.
+Proof.
+  rapply Pushout_ind_beta_pglue.
+Defined.
+
 (** ** Functoriality *)
 
 Local Close Scope trunc_scope.
