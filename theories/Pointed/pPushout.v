@@ -1,7 +1,7 @@
 From HoTT Require Import Basics Types.
 Require Import Pointed.Core pSusp.
 Require Import Colimits.Pushout.
-Require Import Homotopy.Wedge.
+Require Import Homotopy.Wedge Suspension.
 
 Local Open Scope pointed_scope.
 
@@ -81,3 +81,20 @@ Section PPushoutSym.
   Defined.
 
 End PPushoutSym.
+
+Section PSuspDiff.
+
+  Context {X Y Z : pType} {f : Z ->* X} {g : Z ->* Y}.
+
+  (** *** The following map tracks the "sign" of Susp(f) on each summand of X \/ Y *)
+  
+  Definition psusp_diff : psusp Z ->* psusp (X \/ Y).
+  Proof.
+    snapply Build_pMap.
+    - snapply Susp_rec.
+      + exact North.
+      + exact North.
+      + intro z. exact (merid (pushl (f z)) @ (merid (pushr (g z)))^).
+    - reflexivity.
+  Defined.
+  
