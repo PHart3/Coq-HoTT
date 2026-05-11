@@ -65,6 +65,21 @@ Proof.
   rapply Pushout_ind_beta_pglue.
 Defined.
 
+(** A version of [cofiber_ind] specifically for proving that two functions defined on a cofiber are homotopic. *)
+Definition cofiber_ind_homotopic {X Y Z : Type} {f : X -> Y} {h1 h2 : Cofiber f -> Z}
+  (Htt : h1 (cf_apex f) = h2 (cf_apex f))
+  (Hcofib : forall y, h1 (cofib f y) = h2 (cofib f y))
+  (Hcfglue : forall x, ap h1 (cfglue f x) @ Htt = Hcofib (f x) @ ap h2 (cfglue f x))
+  : h1 == h2.
+Proof.
+  snapply (cofiber_ind f _ Hcofib).
+  exists Htt.
+  intro x. lhs napply (transport_paths_FlFr (cfglue f x) (Hcofib (f x))
+                         @ concat_pp_p _ _ _).
+  napply (moveR_Vp _ Htt (ap h1 (cfglue f x))).
+  symmetry. apply Hcfglue.
+Defined.
+
 (** ** Functoriality *)
 
 Local Close Scope trunc_scope.
@@ -177,7 +192,7 @@ Lemma contr_cofiber_equivalence {X Y : Type} {f : X -> Y} `{fe : IsEquiv X Y f}
 Proof.
   snapply Build_Contr.
   - exact (cf_apex f).
-  - snapply (cofiber_ind f _).
+  - snapply cofiber_ind.
     + intro y.
       lhs_V napply (cfglue f (f^-1 y)).
       exact (ap (cofib f) (eisretr f y)).
@@ -194,7 +209,8 @@ Proof.
            
            reflexivity.
         -- lhs napply (concat_pp_p _ _ _).
-           lhs napply (whiskerL ((cfglue f x)^) (concat_Vp (ap (cofib f) (eisretr f (f x))))).
+           lhs napply (whiskerL ((cfglue f x)^)
+                         (concat_Vp (ap (cofib f) (eisretr f (f x))))).
            exact (concat_p1 ((cfglue f x)^)).
       * exact (concat_Vp (cfglue f x)).
 Qed.

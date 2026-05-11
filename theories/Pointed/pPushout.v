@@ -2,6 +2,7 @@ From HoTT Require Import Basics Types.
 Require Import Pointed.Core pSusp.
 Require Import Colimits.Pushout.
 Require Import Homotopy.Wedge Suspension.
+Require Import WildCat.Core WildCat.Universe.
 
 Local Open Scope pointed_scope.
 
@@ -82,11 +83,11 @@ Section PPushoutSym.
 
 End PPushoutSym.
 
+(** *** We have a "diff" map that computes Susp(f), up to a flip, on each summand of X \/ Y. *)
+
 Section PSuspDiff.
 
   Context {X Y Z : pType} {f : Z ->* X} {g : Z ->* Y}.
-
-  (** *** The following map tracks the "sign" of Susp(f) on each summand of X \/ Y *)
   
   Definition psusp_diff : psusp Z ->* psusp (X \/ Y).
   Proof.
@@ -97,4 +98,60 @@ Section PSuspDiff.
       + intro z. exact (merid (pushl (f z)) @ (merid (pushr (g z)))^).
     - reflexivity.
   Defined.
+
+  Definition psusp_flip : psusp Z ->* psusp Z
+    := ppushout_sym_map
+         (f := Build_pMap (B := pUnit) (const_tt Z) idpath)
+         (g := Build_pMap (B := pUnit) (const_tt Z) idpath).
   
+  Lemma psusp_diff_pr1 : fmap psusp wedge_pr1 o* psusp_diff ==* fmap psusp f.
+  Proof.
+    snapply Build_pHomotopy.
+    - snapply Susp_ind_FlFr.
+      + reflexivity.
+      + simpl. exact (merid pt).
+      + intro z. cbn.
+        lhs napply
+          (whiskerR (ap_compose _ (functor_susp (wedge_rec' idmap (const pt) idpath)) (merid z)) _).
+        lhs napply
+          (whiskerR (ap02 (functor_susp (wedge_rec' idmap (const pt) idpath)) (Susp_rec_beta_merid z)) _).
+        lhs napply (whiskerR (ap_pV _ (merid (pushl (f z))) (merid (pushr (g z)))) _).
+        lhs napply (whiskerR
+                      (Susp_rec_beta_merid (pushl (f z))
+                         @@ ap inverse (Susp_rec_beta_merid (pushr (g z)))) _).
+        simpl. lhs napply (concat_pV_p (merid (f z)) _).
+        rhs napply (concat_1p (ap (functor_susp f) (merid z)) @ Susp_rec_beta_merid z).
+        reflexivity.
+    - reflexivity.
+  Qed.
+
+  Lemma psusp_diff_pr2 : fmap psusp wedge_pr2 o* psusp_diff ==* fmap psusp g o* psusp_flip.
+  Proof.
+    snapply Build_pHomotopy.
+    - snapply Susp_ind_FlFr.
+      + simpl. exact (merid pt).
+      + reflexivity.
+      + intro z. cbn.
+        lhs napply
+          (whiskerR (ap_compose _ (functor_susp (wedge_rec' (const pt) idmap idpath)) (merid z)) _).
+        lhs napply
+          (whiskerR (ap02 (functor_susp (wedge_rec' (const pt) idmap idpath)) (Susp_rec_beta_merid z)) _).
+        lhs napply (whiskerR (ap_pV _ (merid (pushl (f z))) (merid (pushr (g z)))) _).
+        lhs napply (whiskerR
+                      (Susp_rec_beta_merid (pushl (f z))
+                         @@ ap inverse (Susp_rec_beta_merid (pushr (g z)))) _).
+        simpl. rhs napply (whiskerL _ (ap_compose pushout_sym_map (functor_susp g) (merid z))).
+        rhs napply (whiskerL _ (ap02 (functor_susp g)
+                                  (Pushout_rec_beta_pglue (Susp Z) _ _ (fun z : Z => (pglue z)^) z))).
+        rhs napply (whiskerL _ (ap_V (functor_susp g) (pglue z) @ ap inverse (Susp_rec_beta_merid z))).
+        lhs napply (concat_p1 _).
+        reflexivity.
+    - simpl. rhs napply (concat_1p _ @ ap inverse (concat_p1 _)).
+      rhs napply (ap inverse (ap_pp (functor_susp g) idpath ((pglue pt)^ @ 1) @ concat_1p _)).
+      rhs napply (ap inverse (ap_Vp (functor_susp g) (merid pt) idpath @ concat_p1 _) @ inv_V _).
+      rhs napply (Susp_rec_beta_merid pt).
+      rhs napply (ap merid (point_eq g)).
+      reflexivity.    
+  Qed.
+        
+End PSuspDiff.
