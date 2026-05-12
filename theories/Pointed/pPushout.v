@@ -95,7 +95,7 @@ Section PSuspDiff.
     - snapply Susp_rec.
       + exact North.
       + exact North.
-      + intro z. exact (merid (pushl (f z)) @ (merid (pushr (g z)))^).
+      + intro z. exact (merid (wedge_inl (f z)) @ (merid (wedge_inr (g z)))^).
     - reflexivity.
   Defined.
 

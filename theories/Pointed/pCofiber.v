@@ -159,7 +159,7 @@ Section CofReglueSetup.
   Definition cofreglue_susp_pmap : pcofiber (reglue f g) ->* psusp Z
     := Build_pMap cofreglue_susp_map idpath.
 
-  Definition cofreglue_susp_map_inv : psusp Z -> pcofiber (reglue f g).
+  Definition cofreglue_susp_map_rev : psusp Z -> pcofiber (reglue f g).
   Proof.
     snapply Susp_rec.
     - exact (cf_apex (reglue f g)).
@@ -181,10 +181,10 @@ Proof.
   pose (g_idp := Build_pMap g idpath : Z ->* [Y, g pt]).
   pose (reglue_str := reglue f_idp g_idp).
   pose (cofreglue_susp_map_str := cofreglue_susp_map (f := f_idp) (g := g_idp)).
-  pose (cofreglue_susp_map_str_inv := cofreglue_susp_map_inv (f := f_idp) (g := g_idp)).
+  pose (cofreglue_susp_map_str_rev := cofreglue_susp_map_rev (f := f_idp) (g := g_idp)).
   
   snapply (isequiv_adjointify cofreglue_susp_map_str).
-  - exact cofreglue_susp_map_str_inv.
+  - exact cofreglue_susp_map_str_rev.
   - snapply (Susp_ind_FFlr _ _).
     + reflexivity.
     + simpl. exact (merid pt).
@@ -214,30 +214,30 @@ Proof.
       * intro x. simpl. exact ((cfglue reglue_str (wedge_inl x))^).
       * intro y. simpl. exact ((cfglue reglue_str (wedge_inr y))^).
       * intro z. simpl. lhs napply (whiskerR _ _).
-        -- lhs napply (ap_compose (ext_glue f_idp g_idp) cofreglue_susp_map_str_inv
+        -- lhs napply (ap_compose (ext_glue f_idp g_idp) cofreglue_susp_map_str_rev
                          (pglue z)).
-           lhs napply (ap02 cofreglue_susp_map_str_inv (functor_pushout_beta_pglue z)).
-           lhs napply (ap02 cofreglue_susp_map_str_inv (concat_p1 _ @ concat_1p _)).
+           lhs napply (ap02 cofreglue_susp_map_str_rev (functor_pushout_beta_pglue z)).
+           lhs napply (ap02 cofreglue_susp_map_str_rev (concat_p1 _ @ concat_1p _)).
            exact (Susp_rec_beta_merid z).
         -- cbn. lhs napply (concat_pp_V _ _).
            reflexivity.
     + simpl. intro x. lhs napply (transport_paths_Flr (pglue (pushl x)) _);
         lhs napply (whiskerR _ (pglue (pushl x))).
       -- napply (whiskerR (inverse2 _)).
-         lhs napply (ap_compose cofreglue_susp_map_str cofreglue_susp_map_str_inv
+         lhs napply (ap_compose cofreglue_susp_map_str cofreglue_susp_map_str_rev
                        (pglue (pushl x))).
-         exact (ap02 cofreglue_susp_map_str_inv
+         exact (ap02 cofreglue_susp_map_str_rev
                   (cofiber_rec_beta_cfglue (f := reglue_str) (pushl x))).
       -- simpl. lhs napply (whiskerR (concat_1p _) (pglue (pushl x))).
          exact (concat_Vp (pglue (pushl x))).                 
     + simpl. intro y. lhs napply (transport_paths_Flr (pglue (pushr y)) _).
       lhs napply (whiskerR _ (pglue (pushr y))).
       -- napply (whiskerR (inverse2 _)).
-         lhs napply (ap_compose cofreglue_susp_map_str cofreglue_susp_map_str_inv
+         lhs napply (ap_compose cofreglue_susp_map_str cofreglue_susp_map_str_rev
                        (pglue (pushr y))).
-         lhs napply (ap02 cofreglue_susp_map_str_inv
+         lhs napply (ap02 cofreglue_susp_map_str_rev
                        (cofiber_rec_beta_cfglue (f := reglue_str) (pushr y))).
-         simpl. lhs napply (ap_V cofreglue_susp_map_str_inv (merid pt)).
+         simpl. lhs napply (ap_V cofreglue_susp_map_str_rev (merid pt)).
          lhs napply (inverse2 (Susp_rec_beta_merid pt)).
          napply (inverse2 _).
          lhs napply (whiskerL _ (homotopy_square_r (cfglue reglue_str) wglue)).
@@ -272,7 +272,7 @@ Section CofReglueCoh.
   Context {X Y Z : pType} {f : Z ->* X} {g : Z ->* Y}.
 
   Lemma cofreglue_susp_extglue_cofib
-    : cofreglue_susp o* ptd_cofib (reglue f g) ==* ext_glue f g.
+    : cofreglue_susp_pmap o* ptd_cofib (reglue f g) ==* ext_glue f g.
   Proof.
     snapply Build_pHomotopy.
     - snapply Pushout_ind_FlFr.
@@ -290,10 +290,46 @@ Section CofReglueCoh.
   Qed.
 
   Lemma diff_cofreglue_susp_extglue
-    : psusp_diff f g o* cofreglue_susp ==* ext_glue_cof (reglue f g).
+    : psusp_diff f g o* cofreglue_susp_pmap ==* ext_glue_cof (reglue f g).
   Proof.
     snapply Build_pHomotopy.
     - snapply (cofib_retraction_ind _ (const_tt Y) (fun u : Unit => path_unit _ u)).
-  Admitted.
-  
+      + reflexivity.
+      + snapply Pushout_ind_FlFr.
+        * intro x. exact (merid (wedge_inl x)).
+        * intro y. exact (merid (wedge_inr y)).
+        * intro z. simpl.
+          lhs napply (whiskerR _ (merid (wedge_inr (g z)))).
+          -- lhs napply (ap_compose (ext_glue f g) (psusp_diff f g) (pglue z)).
+             lhs napply (ap02 (psusp_diff f g) (functor_pushout_beta_pglue z)).
+             lhs napply (ap02 (psusp_diff f g) (concat_p1 _ @ concat_1p _)).
+             apply (Susp_rec_beta_merid z).
+          -- cbn. lhs napply (concat_pV_p _ _).
+             rhs napply (whiskerL _ (ap_const (pglue z) South)).
+             symmetry. apply (concat_p1 _).
+      + simpl. intro x.
+        lhs napply (transport_paths_FlFr (pglue (wedge_inl x)) (merid (wedge_inl x))).
+        apply moveR_Vp_p_inv.
+        rewrite concat_p1.
+        lhs napply (ap_compose cofreglue_susp_map (psusp_diff f g) (pglue (wedge_inl x))).
+        lhs napply (ap02 (psusp_diff f g) (cofiber_rec_beta_cfglue (f := reglue f g) (wedge_inl x))).
+        rhs napply (whiskerL (merid (wedge_inl x))
+                      (cofiber_rec_beta_cfglue (f := reglue f g) (null := (North ; fun x => (merid x)^)) (wedge_inl x))).
+        symmetry. apply concat_pV.
+      + simpl. intro y.
+        lhs napply (transport_paths_FlFr (pglue (wedge_inr y)) (merid (wedge_inr y))).
+        apply moveR_Vp_p_inv.
+        rewrite concat_p1.
+        lhs napply (ap_compose cofreglue_susp_map (psusp_diff f g) (pglue (wedge_inr y))).
+        lhs napply (ap02 (psusp_diff f g) (cofiber_rec_beta_cfglue (f := reglue f g) (wedge_inr y))).
+        rhs napply (whiskerL (merid (wedge_inr y))
+                      (cofiber_rec_beta_cfglue (f := reglue f g) (null := (North ; fun x => (merid x)^)) (wedge_inr y))).
+        simpl. rewrite ap_V.
+        lhs napply (inverse2 (Susp_rec_beta_merid pt)).
+        lhs napply (inverse2 (whiskerL (merid (pushl (f pt)))
+                                (inverse2 (ap merid (ap pushr (point_eq g) @ wglue^ @ ap pushl (point_eq f)^))))).
+        rewrite concat_pV, concat_pV. reflexivity.
+    - reflexivity.
+  Qed.
+               
 End CofReglueCoh.
