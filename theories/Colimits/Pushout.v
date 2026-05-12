@@ -79,6 +79,19 @@ Proof.
   napply Coeq_rec_beta_cglue.
 Defined.
 
+(** A version of [Pushout_ind] specifically for proving that two functions defined on a pushout are homotopic. *)
+Definition Pushout_ind_FlFr {A B C P} {f : A -> B} {g : A -> C} {h1 h2 : Pushout f g -> P}
+  (Hpl : h1 o pushl == h2 o pushl)
+  (Hpr : h1 o pushr == h2 o pushr)
+  (Hpglue : forall x, ap h1 (pglue x) @ Hpr (g x) = Hpl (f x) @ ap h2 (pglue x))
+  : h1 == h2.
+Proof.
+  snapply (Pushout_ind _ Hpl Hpr).
+  intros x.
+  transport_paths FlFr.
+  exact (Hpglue x).
+Defined.
+
 (** ** Universal property *)
 
 Definition pushout_unrec {A B C P} (f : A -> B) (g : A -> C)

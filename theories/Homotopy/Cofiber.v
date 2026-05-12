@@ -44,6 +44,14 @@ Proof.
     exact (null.2 a).
 Defined.
 
+Definition cofiber_rec_beta_cfglue {X Y Z : Type} {f : X -> Y} {g : Y -> Z}
+  {null : NullHomotopy (g o f)}
+  (a : X)
+  : ap (cofiber_rec f g null) (cfglue f a) = null.2 a.
+Proof.
+  rapply Pushout_rec_beta_pglue.
+Defined.
+
 (** The induction principle is similar, although requires a dependent form of null homotopy. *)
 Definition cofiber_ind {X Y : Type} (f : X -> Y) (P : Cofiber f -> Type)
   (g : forall y, P (cofib f y))
@@ -66,7 +74,7 @@ Proof.
 Defined.
 
 (** A version of [cofiber_ind] specifically for proving that two functions defined on a cofiber are homotopic. *)
-Definition cofiber_ind_homotopic {X Y Z : Type} {f : X -> Y} {h1 h2 : Cofiber f -> Z}
+Definition cofiber_ind_FlFr {X Y Z : Type} {f : X -> Y} {h1 h2 : Cofiber f -> Z}
   (Htt : h1 (cf_apex f) = h2 (cf_apex f))
   (Hcofib : forall y, h1 (cofib f y) = h2 (cofib f y))
   (Hcfglue : forall x, ap h1 (cfglue f x) @ Htt = Hcofib (f x) @ ap h2 (cfglue f x))

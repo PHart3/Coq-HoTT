@@ -44,7 +44,7 @@ End PtdLegsPO.
 
 Section SpanTransform.
   
-  Context {X Y Z : pType} {f : Z ->* X} {g : Z ->* Y}.
+  Context {X Y Z : pType} (f : Z ->* X) (g : Z ->* Y).
 
   Definition reglue : X \/ Y ->* ppushout f g
     := functor_ppushout pmap_idmap (fun _ => pt) pmap_idmap

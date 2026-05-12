@@ -462,11 +462,28 @@ Definition concat_Ap {A B : Type} {f g : A -> B} (p : forall x, f x = g x) {x y 
     | idpath => concat_1p_p1 _
   end.
 
-(** A useful variant of [concat_Ap]. *)
+(** A few useful variants of [concat_Ap]. *)
+
 Definition ap_homotopic {A B : Type} {f g : A -> B} (p : forall x, f x = g x) {x y : A} (q : x = y)
   : (ap f q) = (p x) @ (ap g q) @ (p y)^.
 Proof.
   apply moveL_pV.
+  apply concat_Ap.
+Defined.
+
+Definition homotopy_square_l {A B : Type} {f g : A -> B} (p : forall x, f x = g x) {x y : A} (q : x = y)
+  : (p x) = (ap f q) @ (p y) @ (ap g q)^.
+Proof.
+  symmetry.
+  apply moveR_pV.
+  apply concat_Ap.
+Defined.
+
+Definition homotopy_square_r {A B : Type} {f g : A -> B} (p : forall x, f x = g x) {x y : A} (q : x = y)
+  : (p y) = (ap f q)^ @ (p x) @ (ap g q).
+Proof.
+  rhs napply concat_pp_p.
+  apply moveL_Vp.
   apply concat_Ap.
 Defined.
 
@@ -1167,6 +1184,15 @@ Definition ap_pV {A B : Type} (f : A -> B) {a0 a1 a0' : A} (p : a0 = a1) (q : a0
 Definition ap_Vp {A B : Type} (f : A -> B) {a0 a1 a1' : A} (p : a0 = a1) (q : a0 = a1')
   : ap f (p^ @ q) = (ap f p)^ @ ap f q
   := ap_pp f p^ q @ (ap_V f p @@ 1).
+
+(** A variant of [ap_Vp] for the case where the second path is an "ap." *)
+Definition ap_Vap_comp {A B C : Type} (f : A -> B) (g : C -> A) {a0 : A} {c0 c1 : C} (p : g c0 = a0) (q : c0 = c1)
+  : ap f (p^ @ ap g q) = (ap f p)^ @ ap (f o g) q.
+Proof.
+  lhs apply (ap_Vp f p (ap g q)).
+  apply (ap (fun r => (ap f p)^ @ r)).
+  exact ((ap_compose g f q)^).
+Defined.
 
 (** Some higher coherences *)
 

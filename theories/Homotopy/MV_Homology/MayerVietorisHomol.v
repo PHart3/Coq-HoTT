@@ -19,7 +19,7 @@ Section MVHom.
   
   Definition MV_boundary_map : forall {f : C ->* A} {g : C ->* B},
       C_obj (1 + n) (ppushout f g) $-> C_obj n C
-    := fun f g => C_susp C $o fmap (C_obj (1 + n)) ext_glue.
+    := fun f g => C_susp C $o fmap (C_obj (1 + n)) (ext_glue f g).
 
   Definition MV_push_diff : forall {f : C ->* A} {g : C ->* B},
     ab_biprod (C_obj n A) (C_obj n B) $-> C_obj n (ppushout f g)
@@ -32,11 +32,12 @@ Section MVHom.
 
   (** In homology, ext_glue fits into a commuting triangle with the cofiber-suspension equivalence. *)
   Lemma MV_boundary_cof_susp_equiv {f : C ->* A} {g : C ->* B} :
-    fmap (C_obj n) (cof_susp_equiv f g) ∘ fmap (C_obj n) (ptd_cofib reglue) == fmap (C_obj n) ext_glue.
+    fmap (C_obj n) (cof_susp_equiv f g) ∘ fmap (C_obj n) (ptd_cofib (reglue f g))
+    == fmap (C_obj n) (ext_glue f g).
   Proof.
     napply pointwise_paths_concat.
-    + symmetry. exact (fmap_comp (C_obj n) (ptd_cofib reglue) (cof_susp_equiv f g)).
-    + exact (Homol_mor_bpind ext_glue).
+    + symmetry. exact (fmap_comp (C_obj n) (ptd_cofib (reglue f g)) (cof_susp_equiv f g)).
+    + exact (Homol_mor_bpind (ext_glue f g)).
   Qed.
 
 End MVHom.

@@ -11,7 +11,7 @@ Section CofRetractInd.
   Context {X Y Z T : Type} {f : Z -> X} {g : Z -> Y} {h : Pushout f g -> T}.
 
   (* the short induction principle *)
-  Lemma cofib_retraction_ind (r : Y -> Z) (retr : r o g == idmap) (P : Cofiber h -> Type)
+  Lemma cofib_retraction_ind (P : Cofiber h -> Type) (r : Y -> Z) (retr : r o g == idmap)
     (base_s : P (cf_apex h)) (right_s : forall t, P (cofib h t))
     (glue_s_l : forall x, transport P (pglue (pushl x)) (right_s (h (pushl x))) = base_s)
     (glue_s_r : forall y, transport P (pglue (pushr y)) (right_s (h (pushr y))) = base_s)
@@ -52,7 +52,7 @@ Section CofRetractInd.
     {glue_s_l : forall x, transport P (pglue (pushl x)) (right_s (h (pushl x))) = base_s}
     {glue_s_r : forall y, transport P (pglue (pushr y)) (right_s (h (pushr y))) = base_s}
     (x : X)
-    : apD (cofib_retraction_ind r retr P base_s right_s glue_s_l glue_s_r) (cfglue h (pushl x)) = glue_s_l x
+    : apD (cofib_retraction_ind P r retr base_s right_s glue_s_l glue_s_r) (cfglue h (pushl x)) = glue_s_l x
     := cofiber_ind_beta_cfglue (pushl x).
     
 End CofRetractInd.
