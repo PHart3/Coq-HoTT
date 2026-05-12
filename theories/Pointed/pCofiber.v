@@ -40,6 +40,19 @@ Definition ptd_cofib_3 {X Y : pType} (f : X ->* Y) :
   (pcofiber (ptd_cofib f)) ->* (pcofiber (ptd_cofib (ptd_cofib f)))
   := (iterated_ptd_cofib f 3).2.
 
+(** We define a special variant of ext_glue (found in pPushout.v) out of
+    the pointed cofiber because of a mismatch between the point of a pointed
+    cofiber and that of a general pointed pushout. *)
+Definition ext_glue_cof {X Y : pType} (f : X ->* Y) : pcofiber f ->* psusp X.
+Proof.
+  snapply Build_pMap.
+  - snapply cofiber_rec.
+    + exact (const South).
+    + exists North.
+      intro x. exact ((merid x)^).
+  - reflexivity.
+Defined.
+
 (** We have a pointed equivalence between the cofiber of X \/ Y -> X ⊔_Z Y and Susp Z. *)
 
 Section CofSuspEquiv.
@@ -277,7 +290,10 @@ Section CofReglueCoh.
   Qed.
 
   Lemma diff_cofreglue_susp_extglue
-    : psusp_diff o* cofreglue_susp ==* ext_glue (reglue f g) (pconst (B := pUnit)).
-    
+    : psusp_diff f g o* cofreglue_susp ==* ext_glue_cof (reglue f g).
+  Proof.
+    snapply Build_pHomotopy.
+    - snapply (cofib_retraction_ind _ (const_tt Y) (fun u : Unit => path_unit _ u)).
+  Admitted.
   
 End CofReglueCoh.

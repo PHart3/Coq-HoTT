@@ -87,7 +87,7 @@ End PPushoutSym.
 
 Section PSuspDiff.
 
-  Context {X Y Z : pType} {f : Z ->* X} {g : Z ->* Y}.
+  Context {X Y Z : pType} (f : Z ->* X) (g : Z ->* Y).
   
   Definition psusp_diff : psusp Z ->* psusp (X \/ Y).
   Proof.
