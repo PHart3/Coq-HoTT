@@ -1,7 +1,7 @@
 From HoTT Require Import Basics.
 Require Import Types.Paths Unit.
 Require Import Pointed.Core pSusp pPushout pEquiv.
-Require Import Homotopy.Cofiber Wedge Suspension CofibRetractInduction.
+Require Import Homotopy.Cofiber Wedge Suspension NullHomotopy CofibRetractInduction.
 Require Import Colimits.Pushout.
 Require Import Spaces.Nat.Core.
 
@@ -104,38 +104,43 @@ Section CofReglueSetup.
 
   Context {X Y Z : pType} {f : Z ->* X} {g : Z ->* Y}.
 
+  Definition extreglue_nullhmtpy : NullHomotopy (ext_glue f g o reglue f g).
+  Proof.
+    exists North.
+    snapply wedge_ind.
+    - intro. reflexivity.
+    - intro. exact ((merid pt)^).
+    - lhs napply (transport_paths_Fl wglue idpath).
+      lhs napply (concat_p1 _).
+      apply (ap inverse).
+      lhs napply (ap_compose (reglue f g) (ext_glue f g) wglue).
+      lhs napply (ap02 (ext_glue f g) (functor_pushout_beta_pglue tt)).
+      assert (ap_ap_V_concat_ap_VV :
+               forall {A B C D : Type} {h : C -> D}
+                      {k1 : A -> C} {k2 : B -> C} {a b : A} {x y : B}
+                      (p1 : a = b) (p2 : k1 a = k2 x) (p3 : x = y),
+                 ap h ((ap k1 p1^ @ p2) @ ap k2 (p3^)^)
+                 = (ap (h o k1) p1)^ @ ap h p2 @ ap (h o k2) p3). {
+        destruct p1. destruct p3. simpl.
+        lhs napply (ap_pp h _ idpath).
+        napply (whiskerR _ idpath). apply (ap_pp h idpath p2).
+      }
+      lhs napply (ap_ap_V_concat_ap_VV _ _ _ _ _ _ _ _ _ _ _
+                    (point_eq f) (pglue pt) (point_eq g)). simpl.
+      lhs napply (whiskerR
+                    (ap inverse (ap_const (point_eq f) _) @@
+                       functor_pushout_beta_pglue (f := f) (g := g) (B' := pUnit) pt)
+                    (ap (fun x : Y => _) (point_eq g))).
+      cbn. lhs napply (whiskerL _ (ap_const (point_eq g) _)).
+      lhs napply (concat_p1 _ @ concat_1p _ @ concat_p1 _ @ concat_1p _).
+      reflexivity.
+  Defined. 
+  
   Definition cofreglue_susp_map : pcofiber (reglue f g) -> psusp Z.
   Proof.
     snapply cofiber_rec.
     - exact (ext_glue f g).
-    - exists North.
-      snapply wedge_ind.
-      + intro. reflexivity.
-      + intro. exact ((merid pt)^).
-      + lhs napply (transport_paths_Fl wglue idpath).
-         lhs napply (concat_p1 _).
-         apply (ap inverse).
-         lhs napply (ap_compose (reglue f g) (ext_glue f g) wglue).
-         lhs napply (ap02 (ext_glue f g) (functor_pushout_beta_pglue tt)).
-         assert (ap_ap_V_concat_ap_VV :
-                  forall {A B C D : Type} {h : C -> D}
-                         {k1 : A -> C} {k2 : B -> C} {a b : A} {x y : B}
-                         (p1 : a = b) (p2 : k1 a = k2 x) (p3 : x = y),
-                    ap h ((ap k1 p1^ @ p2) @ ap k2 (p3^)^)
-                    = (ap (h o k1) p1)^ @ ap h p2 @ ap (h o k2) p3). {
-           destruct p1. destruct p3. simpl.
-           lhs napply (ap_pp h _ idpath).
-           napply (whiskerR _ idpath). apply (ap_pp h idpath p2).
-         }
-         lhs napply (ap_ap_V_concat_ap_VV _ _ _ _ _ _ _ _ _ _ _
-                       (point_eq f) (pglue pt) (point_eq g)). simpl.
-         lhs napply (whiskerR
-                       (ap inverse (ap_const (point_eq f) _) @@
-                          functor_pushout_beta_pglue (f := f) (g := g) (B' := pUnit) pt)
-                       (ap (fun x : Y => _) (point_eq g))).
-         cbn. lhs napply (whiskerL _ (ap_const (point_eq g) _)).
-         lhs napply (concat_p1 _ @ concat_1p _ @ concat_p1 _ @ concat_1p _).
-         reflexivity.
+    - exact extreglue_nullhmtpy.
   Defined.
   
   Definition cofreglue_susp_pmap : pcofiber (reglue f g) ->* psusp Z
@@ -241,12 +246,38 @@ Proof.
  Qed.
 
 Lemma cofreglue_susp {X Y Z : pType} {f : Z ->* X} {g : Z ->* Y}
-  : pcofiber (reglue f g) <~>* psusp Z.
+    : pcofiber (reglue f g) <~>* psusp Z.
 Proof.
   snapply Build_pEquiv.
   - exact cofreglue_susp_pmap.
   - exact cofreglue_susp_map_isequiv.
 Defined.
 
+(* a couple of useful coherence conditions between cofreglue_susp and ext_glue *)
+Section CofReglueCoh.
 
+  Context {X Y Z : pType} {f : Z ->* X} {g : Z ->* Y}.
 
+  Lemma cofreglue_susp_extglue_cofib
+    : cofreglue_susp o* ptd_cofib (reglue f g) ==* ext_glue f g.
+  Proof.
+    snapply Build_pHomotopy.
+    - snapply Pushout_ind_FlFr.
+      + reflexivity.
+      + reflexivity.
+      + intro z. simpl. rewrite concat_p1. rewrite concat_1p. reflexivity.
+    - simpl. rhs napply (concat_p1 _ @ concat_p1 _).
+      rewrite concat_1p.
+      etransitivity.
+      2: {
+        symmetry.
+        exact (cofiber_rec_beta_cfglue (null := extreglue_nullhmtpy) pt).
+      }
+      reflexivity.
+  Qed.
+
+  Lemma diff_cofreglue_susp_extglue
+    : psusp_diff o* cofreglue_susp ==* ext_glue (reglue f g) (pconst (B := pUnit)).
+    
+  
+End CofReglueCoh.
