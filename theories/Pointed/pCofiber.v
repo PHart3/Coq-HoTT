@@ -26,11 +26,6 @@ Proof.
   + intros [[S T] h]. exists (T, pcofiber h). exact (ptd_cofib h).
 Defined.
 
-(** The cofiber of an equivalence is equivalent to the zero object. *)
-
-Definition unit_cofiber_equivalence {X Y : Type} {f : X -> Y} `{fe : IsEquiv X Y f}
-  : pEquiv (pcofiber f) pUnit := Build_pEquiv' (@equiv_contr_unit _ contr_cofiber_equivalence) idpath.
-
 (* some useful cases of iterated_ptd_cofib *)
 
 Definition ptd_cofib_2 {X Y : pType} (f : X ->* Y) : (pcofiber f) ->* (pcofiber (ptd_cofib f))
@@ -40,18 +35,10 @@ Definition ptd_cofib_3 {X Y : pType} (f : X ->* Y) :
   (pcofiber (ptd_cofib f)) ->* (pcofiber (ptd_cofib (ptd_cofib f)))
   := (iterated_ptd_cofib f 3).2.
 
-(** We define a special variant of ext_glue (found in pPushout.v) out of
-    the pointed cofiber because of a mismatch between the point of a pointed
-    cofiber and that of a general pointed pushout. *)
-Definition ext_glue_cof {X Y : pType} (f : X ->* Y) : pcofiber f ->* psusp X.
-Proof.
-  snapply Build_pMap.
-  - snapply cofiber_rec.
-    + exact (const South).
-    + exists North.
-      intro x. exact ((merid x)^).
-  - reflexivity.
-Defined.
+(** The cofiber of an equivalence is equivalent to the zero object. *)
+
+Definition unit_cofiber_equivalence {X Y : Type} {f : X -> Y} `{fe : IsEquiv X Y f}
+  : pEquiv (pcofiber f) pUnit := Build_pEquiv' (@equiv_contr_unit _ contr_cofiber_equivalence) idpath.
 
 (** We have a pointed equivalence between the cofiber of X \/ Y -> X ⊔_Z Y and Susp Z. *)
 
@@ -110,6 +97,20 @@ Section CofSuspEquiv.
   Defined.
       
 End CofSuspEquiv.
+
+
+(** We define a special variant of ext_glue (found in pPushout.v) out of
+    the pointed cofiber because of a mismatch between the point of a pointed
+    cofiber and that of a general pointed pushout. *)
+Definition ext_glue_cof {X Y : pType} (f : X ->* Y) : pcofiber f ->* psusp X.
+Proof.
+  snapply Build_pMap.
+  - snapply cofiber_rec.
+    + exact (const South).
+    + exists North.
+      intro x. exact ((merid x)^).
+  - reflexivity.
+Defined.
 
 (** *** The pointed cofiber of reglue is the pointed suspension of the apex. *)
 
