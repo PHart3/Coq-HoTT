@@ -44,12 +44,10 @@ Proof.
     exact (null.2 a).
 Defined.
 
-Definition cofiber_rec_beta_cfglue {X Y Z : Type} {f : X -> Y} {g : Y -> Z}
-  {null : NullHomotopy (g o f)}
-  (a : X)
+Definition cofiber_rec_beta_cfglue {X Y Z : Type} {f : X -> Y} {g : Y -> Z} (null : NullHomotopy (g o f)) (a : X)
   : ap (cofiber_rec f g null) (cfglue f a) = null.2 a.
 Proof.
-  rapply Pushout_rec_beta_pglue.
+  apply Pushout_rec_beta_pglue.
 Defined.
 
 (** The induction principle is similar, although requires a dependent form of null homotopy. *)

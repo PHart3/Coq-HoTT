@@ -6,6 +6,7 @@ Require Import SuccessorStructure.
 Require Import Colimits.Pushout.
 Require Import Pointed.Core pCofiber pEquiv pSusp.
 Require Import Homotopy.Cofiber Wedge.
+Require Import Types.Paths.
 
 Local Open Scope succ_scope.
 Local Open Scope pointed_scope.
@@ -53,7 +54,7 @@ Section Basepoint_ind.
 End Basepoint_ind.
 
 (* Since we do not assume the additivity axiom for homology theories, we prove binary additivity from the exactness axiom, that is, H(X \/ Y) <~> H(X) x H(Y) *)
-Section Homol_bin_wedge.
+Section Alg_Homol_bin_wedge.
   (* This is a necessary sublemma about groups. Suppose we have the following diagram of groups,
 
              i1           i2
@@ -124,54 +125,155 @@ Section Homol_bin_wedge.
   Proof
     apply grp_th_lemma.
   Defined.
-  *)
+ *)
 
-  Definition cof_to_Y {X Y : pType} : pcofiber (@wedge_inl X Y) -> Y.
+End Alg_Homol_bin_wedge.
+
+
+Section Top_Homol_bin_wedge.
+  Context {X Y : pType}.
+  Local Definition wedge_inl := @wedge_inl X Y.
+  Local Definition wedge_inr := @wedge_inr X Y.
+  Local Definition wglue := @wglue X Y.
+
+  (* For the map wedge_inl : X -> X\/Y, there is a pointed equivalence, pcofiber wedge_inl <~>* Y. *)
+  Definition cofl_to_l : pcofiber wedge_inl -> Y.
   Proof.
-    snapply Pushout_rec.
+    snapply cofiber_rec.
     - exact wedge_pr2.
-    - intro pnt; exact (point Y).
-    - intro x; reflexivity.    
+    - exists (point Y).
+      intro x.
+      reflexivity.
   Defined.
 
-  Definition Y_to_cof {X Y : pType} : Y -> pcofiber (@wedge_inl X Y).
+  Definition l_to_cofl : Y -> pcofiber wedge_inl.
   Proof.
     intro y.
-    apply (cofib wedge_inl).
-    apply (wedge_inr y).
+    exact ((cofib wedge_inl o wedge_inr) y).
   Defined.
 
-(*  Definition cof_to_Y_to_cof
-    {X Y : pType}
-    {f : pcofiber (@wedge_inl X Y) -> Y}
-    {g : Y -> pcofiber (@wedge_inl X Y)}
-    : g o f == idmap.
+  Definition cofl_hpty : l_to_cofl o cofl_to_l == idmap.
   Proof.
     snapply cofiber_ind.
-    - cbn.
-      snapply wedge_ind.
-      + intro x.
-        cbn.
-        
-        pose (mycfglue := cfglue (@wedge_inl X Y) x). 
-        pose (mywglue := ap (cofib wedge_inl) (@wglue X Y)).
-        rhs apply mycfglue.
-
-        
-  Definition cof_wedge_inl_cod_equiv {X Y : pType} : pcofiber (@wedge_inl X Y) <~> Y.
-  Proof.
-    snapply Build_Equiv.
-     (* pose (f := Pushout_rec Y wedge_pr2). *)
-    - exact f.
-    - snapply Build_IsEquiv.
-      + exact g.
+    - snapply wedge_ind.
+      + intro x; simpl.
+        rhs apply (cfglue wedge_inl x).
+        rhs_V apply (cfglue wedge_inl (point X)).
+        rhs apply (ap (cofib wedge_inl) wglue).
+        reflexivity.
       + reflexivity.
-      +
+      + simpl.
+        snapply (@dpath_path_FlFr _ _ (l_to_cofl o cofl_to_l o (cofib wedge_inl)) _ _ _ wglue _).
+        rhs napply concat_p1.
+        lhs napply concat_pp_p; lhs napply concat_pp_p; lhs napply concat_pp_p.
+        lhs napply concat_1p.
+        apply moveR_Vp.
+        lhs napply concat_p_Vp.
+        apply moveL_Mp; lhs napply concat_Vp.
+        rhs apply (ap_compose'
+                     (cofl_to_l o (cofib wedge_inl))
+                     l_to_cofl
+                     wglue).
+        rhs napply (ap (ap l_to_cofl) (wedge_rec_beta_wglue _ _)).
+        reflexivity.
+    - exists ((ap (cofib wedge_inl) wglue)^ @ cfglue wedge_inl (point X)); simpl.
+      intro x.
+      napply dpath_path_FFlr.
+      lhs napply concat_pV_p.
+      lhs napply concat_pp_p.
+      apply moveL_pM.
+      lhs napply concat_pp_V.
+      rhs snapply (ap (ap l_to_cofl) (cofiber_rec_beta_cfglue (f := pushl) _ x)); cbn.
+      reflexivity.
   Defined.
 
-  Definition cof_wedge_inl_cod_pequiv := term.
+  Definition cofl_l_equiv : Cofiber wedge_inl <~> Y.
+  Proof.
+    snapply equiv_adjointify.
+    - exact cofl_to_l.
+    - exact l_to_cofl.
+    - reflexivity.
+    - exact cofl_hpty.
+  Defined.
+
+  Definition cofl_l_pequiv : pcofiber wedge_inl <~>* Y.
   Proof.
     snapply Build_pEquiv'.
-  Defined
-  *)       
-End Homol_bin_wedge.
+    - exact cofl_l_equiv.
+    - reflexivity.
+  Defined.
+
+
+  (** Similarily we have pcofiber wedge_inr <~>* X *)
+  Definition cofl_to_l : pcofiber wedge_inl -> Y.
+  Proof.
+    snapply cofiber_rec.
+    - exact wedge_pr2.
+    - exists (point Y).
+      intro x.
+      reflexivity.
+  Defined.
+
+  Definition l_to_cofl : Y -> pcofiber wedge_inl.
+  Proof.
+    intro y.
+    exact ((cofib wedge_inl o wedge_inr) y).
+  Defined.
+
+  Definition cofl_hpty : l_to_cofl o cofl_to_l == idmap.
+  Proof.
+    snapply cofiber_ind.
+    - snapply wedge_ind.
+      + intro x; simpl.
+        rhs apply (cfglue wedge_inl x).
+        rhs_V apply (cfglue wedge_inl (point X)).
+        rhs apply (ap (cofib wedge_inl) wglue).
+        reflexivity.
+      + reflexivity.
+      + simpl.
+        snapply (@dpath_path_FlFr _ _ (l_to_cofl o cofl_to_l o (cofib wedge_inl)) _ _ _ wglue _).
+        rhs napply concat_p1.
+        lhs napply concat_pp_p; lhs napply concat_pp_p; lhs napply concat_pp_p.
+        lhs napply concat_1p.
+        apply moveR_Vp.
+        lhs napply concat_p_Vp.
+        apply moveL_Mp; lhs napply concat_Vp.
+        rhs apply (ap_compose'
+                     (cofl_to_l o (cofib wedge_inl))
+                     l_to_cofl
+                     wglue).
+        rhs napply (ap (ap l_to_cofl) (wedge_rec_beta_wglue _ _)).
+        reflexivity.
+    - exists ((ap (cofib wedge_inl) wglue)^ @ cfglue wedge_inl (point X)); simpl.
+      intro x.
+      napply dpath_path_FFlr.
+      lhs napply concat_pV_p.
+      lhs napply concat_pp_p.
+      apply moveL_pM.
+      lhs napply concat_pp_V.
+      rhs snapply (ap (ap l_to_cofl) (cofiber_rec_beta_cfglue (f := pushl) _ x)); cbn.
+      reflexivity.
+  Defined.
+
+  Definition cofl_l_equiv : Cofiber wedge_inl <~> Y.
+  Proof.
+    snapply equiv_adjointify.
+    - exact cofl_to_l.
+    - exact l_to_cofl.
+    - reflexivity.
+    - exact cofl_hpty.
+  Defined.
+
+  Definition cofl_l_pequiv : pcofiber wedge_inl <~>* Y.
+  Proof.
+    snapply Build_pEquiv'.
+    - exact cofl_l_equiv.
+    - reflexivity.
+  Defined.
+  
+End Top_Homol_bin_wedge.
+
+
+Definition homol_preserves_coprod {X Y : pType} `{Integers Z} {z : Z} {C : HomologyTheory} : (C_obj z (Wedge X Y)) <~> grp_prod (C_obj z X) (C_obj z Y).
+  Proof.
+  
