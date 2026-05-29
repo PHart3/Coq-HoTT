@@ -3,7 +3,7 @@ From HoTT.WildCat Require Import Core Universe.
 Require Import Groups.Group ExactSeq.
 Require Import AbGroups.AbelianGroup AbHom Biproduct.
 Require Import Pointed.Core pPushout pSusp pCofiber.
-Require Import Homotopy.Homology.
+Require Import Homotopy.Homology.Core.
 
 Local Open Scope pointed_scope.
 
