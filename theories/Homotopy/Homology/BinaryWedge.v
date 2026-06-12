@@ -5,12 +5,13 @@ Require Import AbGroups.AbelianGroup.
 Require Import Colimits.Pushout.
 Require Import Pointed.Core pCofiber pEquiv.
 Require Import Homotopy.Cofiber Wedge.
-
-
+Require Import Homology.Core.
 Require Import Types.Paths.
 
 Local Open Scope pointed_scope.
 Local Open Scope mc_mult_scope.
+
+Generalizable Variable Z.
 
 (* Since we do not assume the additivity axiom for homology theories, we prove binary additivity from the exactness axiom, that is, H(X \/ Y) <~> H(X) x H(Y) *)
 Section Alg_Homol_bin_wedge.
@@ -79,7 +80,7 @@ Section Alg_Homol_bin_wedge.
 
 End Alg_Homol_bin_wedge.
 
-(*
+
 Section Homol_bin_wedge.
   Context {X Y : pType} `{Integers Z} {z : Z} {C : HomologyTheory}.
   Local Definition wedge_inl := @wedge_inl X Y.
@@ -98,13 +99,6 @@ Section Homol_bin_wedge.
       reflexivity.
   Defined.
 
-  (*
-  Definition r_to_cofl : Y -> pcofiber wedge_inl.
-  Proof.
-    snapply Build_pMap.
-    - exact (cofib wedge_inl o wedge_inr).
-    - simpl.
-  Defined. *)
  Definition r_to_cofl : Y -> pcofiber wedge_inl.
   Proof.
     exact (cofib wedge_inl o wedge_inr).
@@ -172,8 +166,7 @@ Section Homol_bin_wedge.
 
   Definition l_to_cofr : X -> pcofiber wedge_inr.
   Proof.
-    intro x.
-    exact (cofib wedge_inr (wedge_inl x)).
+    exact (cofib wedge_inr o wedge_inl).
   Defined.
 
   Definition cofr_hpty : l_to_cofr o cofr_to_l == idmap.
@@ -248,7 +241,7 @@ Section Homol_bin_wedge.
       apply h.
 *)
       
-  Definition homol_preserves_coprod : GroupIsomorphism (C_obj z (Wedge X Y)) (grp_prod (C_obj z X) (C_obj z Y)).
+  Theorem homol_preserves_coprod : GroupIsomorphism (C_obj z (X \/ Y)) (grp_prod (C_obj z X) (C_obj z Y)).
   Proof.
     snapply grp_prod_iso.
     - exact (fmap (C_obj z) wedge_inl).

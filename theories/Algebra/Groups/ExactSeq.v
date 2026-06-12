@@ -1,5 +1,9 @@
-From HoTT Require Import Basics Types WildCat.Core.
+From HoTT Require Import Basics Truncations Types WildCat.Core.
+Require Import Modality.
+From HoTT.Pointed Require Import Core pMap pFiber.
 Require Import Groups.Group Groups.Subgroup.
+Require Import Homotopy.ExactSequence.
+Require Import HProp.
 
 Local Open Scope predicate_scope.
 
@@ -14,3 +18,60 @@ Record GrpIsExact {A B C : Group} (i : A $-> B) (f : B $-> C) :=
       ker_sub_im : grp_kernel f ⊆ grp_image i ;
     }.
 
+(* The more general definition of exactness is equivalent to the form above *)
+Definition IsExact_GrpIsExact {A B C : Group} {i : A $-> B} {f : B $-> C}
+  : IsExact (-1) i f -> GrpIsExact i f.
+Proof.
+  intro isexact.
+  apply Build_GrpIsExact.
+  - intros b im; cbn.
+    strip_truncations; destruct im as [a p].
+    lhs_V apply (ap f p).
+    destruct cx_isexact.
+    exact (pointed_fun a).
+  - intros b ker.
+    destruct isexact; cbn.
+    cbn in ker.
+    + rapply (Trunc_rec (n:=-1) (A:=(hfiber (cxfib cx_isexact) (b; ker)))).
+      * intro x; destruct x as [x xpath].      
+        apply tr.
+        exists x.
+        lhs_V apply (pfib_cxfib cx_isexact x).
+        lhs apply (ap (pfib f) xpath).
+        reflexivity.
+      * exact (@center _ (conn_map_isexact (b; ker))).
+Defined.
+
+Definition GrpIsExact_IsExact {A B C : Group} {i : A $-> B} {f : B $-> C}
+  : GrpIsExact i f -> IsExact (-1) i f.
+Proof.
+  intro grpisexact; destruct grpisexact as [im_sub_ker ker_sub_im].
+  snapply Build_IsExact.
+  - unfold IsComplex.
+    snapply Build_pHomotopy.
+    + intro a.
+      exact (im_sub_ker (i _) (tr (_; 1))).
+    + tapply center.
+  - cbn.
+    apply BuildIsSurjection.
+    intro ffib; destruct ffib as [b ffibpath].
+    rapply (Trunc_rec (n:=-1) (A:={x : A & i x = b})).
+    + intro im; destruct im as [a apath].
+      apply tr.
+      exists a.
+      snapply path_sigma'.
+      * exact apath.
+      * tapply center.
+    + exact (ker_sub_im b ffibpath).
+Defined.
+
+(* This equivalence requires function extensionality? 
+Definition Equiv_IsExact_GrpIsExact {A B C : Group} {i : A $-> B} {f : B $-> C}
+  : (IsExact (-1) i f) <~> (GrpIsExact i f).
+Proof.
+  snapply equiv_equiv_iff_hprop.
+  - 
+  - 
+  - 
+Defined.
+*)
