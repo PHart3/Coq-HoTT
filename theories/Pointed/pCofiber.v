@@ -15,6 +15,11 @@ Definition pcofiber {X Y : Type} (f : X -> Y) : pType
 Definition ptd_cofib {X Y : pType} (f : X ->* Y) : Y ->* pcofiber f
     := Build_pMap (cofib f) ((ap (cofib f) (point_eq f))^ @ cfglue f pt).
 
+(** The cofiber of an equivalence is equivalent to the zero object. *)
+
+Definition unit_cofiber_equivalence {X Y : Type} {f : X -> Y} `{fe : IsEquiv X Y f}
+  : pEquiv (pcofiber f) pUnit := Build_pEquiv' (@equiv_contr_unit _ contr_cofiber_equivalence) idpath.
+
 (** Iterated pointed cofibers *)
 
 (* We construct the iterated cofiber map (packaged with its domain and codomain). *)
@@ -35,10 +40,47 @@ Definition ptd_cofib_3 {X Y : pType} (f : X ->* Y) :
   (pcofiber (ptd_cofib f)) ->* (pcofiber (ptd_cofib (ptd_cofib f)))
   := (iterated_ptd_cofib f 3).2.
 
-(** The cofiber of an equivalence is equivalent to the zero object. *)
+(** We define a special variant of ext_glue (found in pPushout.v) out of
+    the pointed cofiber because of a mismatch between the point of a pointed
+    cofiber and that of a general pointed pushout. *)
+Definition ext_glue_cof {X Y : pType} (f : X ->* Y) : pcofiber f ->* psusp X.
+Proof.
+  snapply Build_pMap.
+  - snapply cofiber_rec.
+    + exact (const South).
+    + exists North.
+      intro x. exact ((merid x)^).
+  - reflexivity.
+Defined.
 
-Definition unit_cofiber_equivalence {X Y : Type} {f : X -> Y} `{fe : IsEquiv X Y f}
-  : pEquiv (pcofiber f) pUnit := Build_pEquiv' (@equiv_contr_unit _ contr_cofiber_equivalence) idpath.
+(** We have a pointed equivalence between the iterated cofiber of f : X ->* Y and Susp X. *)
+
+Section Cof2Equiv.
+
+  Context {X Y : pType} {f : X ->* Y}.
+
+  Let pcof2 := pcofiber (ptd_cofib f).
+
+  Definition cof2_equiv_into : pcof2 ->* psusp X.
+  Proof.
+    snapply Build_pMap.
+    - snapply (cofiber_rec (ptd_cofib f)).
+      + exact (ext_glue_cof f).
+      + exists South. reflexivity.
+    - exact ((merid pt)^).
+  Defined.
+
+  Definition cof2_equiv_out : psusp X ->* pcof2.
+  Proof.
+    snapply Build_pMap.
+    - rapply (Susp_rec (ptd_cofib_2 f pt) pt).
+      intro x. exact ((ap (ptd_cofib_2 f) (cfglue _ x))^ @ (cfglue (ptd_cofib f) (f x))).
+    - exact (point_eq (ptd_cofib _)).
+  Defined.
+
+  
+
+End Cof2Equiv.
 
 (** We have a pointed equivalence between the cofiber of X \/ Y -> X ⊔_Z Y and Susp Z. *)
 
@@ -97,20 +139,6 @@ Section CofSuspEquiv.
   Defined.
       
 End CofSuspEquiv.
-
-
-(** We define a special variant of ext_glue (found in pPushout.v) out of
-    the pointed cofiber because of a mismatch between the point of a pointed
-    cofiber and that of a general pointed pushout. *)
-Definition ext_glue_cof {X Y : pType} (f : X ->* Y) : pcofiber f ->* psusp X.
-Proof.
-  snapply Build_pMap.
-  - snapply cofiber_rec.
-    + exact (const South).
-    + exists North.
-      intro x. exact ((merid x)^).
-  - reflexivity.
-Defined.
 
 (** *** The pointed cofiber of reglue is the pointed suspension of the apex. *)
 
@@ -214,7 +242,7 @@ Proof.
     + snapply Pushout_ind_FlFr.
       * intro x. simpl. exact ((cfglue reglue_str (wedge_inl x))^).
       * intro y. simpl. exact ((cfglue reglue_str (wedge_inr y))^).
-      * intro z. simpl. lhs napply (whiskerR _ _).
+      * intro z. simpl. <lhs napply (whiskerR _ _).
         -- lhs napply (ap_compose (ext_glue f_idp g_idp) cofreglue_susp_map_str_rev
                          (pglue z)).
            lhs napply (ap02 cofreglue_susp_map_str_rev (functor_pushout_beta_pglue z)).
