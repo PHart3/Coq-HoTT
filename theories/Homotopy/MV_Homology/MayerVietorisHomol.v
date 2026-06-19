@@ -24,11 +24,11 @@ Section MVHom.
   Definition MV_push_diff : forall {f : C ->* A} {g : C ->* B},
     ab_biprod (C_obj n A) (C_obj n B) $-> C_obj n (ppushout f g)
     := fun f g => ab_biprod_rec
-         (fmap (C_obj n) ptd_pushl) (inverse_hom (fmap (C_obj n) ptd_pushr)).
+         (fmap (C_obj n) ptd_pushl) (fmap (C_obj n) ptd_pushr).
 
   Definition MV_po_to_prod : forall (f : C ->* A) (g : C ->* B),
       C_obj n C $-> ab_biprod (C_obj n A) (C_obj n B)
-    := fun f g => ab_biprod_corec (fmap (C_obj n) f) (fmap (C_obj n) g).
+    := fun f g => ab_biprod_corec (fmap (C_obj n) f) (inverse_hom (fmap (C_obj n) g)).
 
   (** In homology, ext_glue fits into a commuting triangle with the cofiber-suspension equivalence. *)
   Lemma MV_boundary_cof_susp_equiv {f : C ->* A} {g : C ->* B} :
