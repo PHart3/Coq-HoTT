@@ -61,7 +61,7 @@ Section Cof2Equiv.
 
   Let pcof2 := pcofiber (ptd_cofib f).
 
-  Definition cof2_equiv_into : pcof2 ->* psusp X.
+  Definition cof2_equiv_map : pcof2 ->* psusp X.
   Proof.
     snapply Build_pMap.
     - snapply (cofiber_rec (ptd_cofib f)).
@@ -70,7 +70,7 @@ Section Cof2Equiv.
     - exact ((merid pt)^).
   Defined.
 
-  Definition cof2_equiv_out : psusp X ->* pcof2.
+  Definition cof2_equiv_revmap : psusp X ->* pcof2.
   Proof.
     snapply Build_pMap.
     - rapply (Susp_rec (ptd_cofib_2 f pt) pt).
@@ -78,8 +78,48 @@ Section Cof2Equiv.
     - exact (point_eq (ptd_cofib _)).
   Defined.
 
-  
+  Lemma cof2_isequiv : IsEquiv cof2_equiv_map.
+  Proof.
+    snapply (isequiv_adjointify cof2_equiv_map).
+    - exact cof2_equiv_revmap.
+    - snapply (Susp_ind_FFlr _ _).
+      + reflexivity.
+      + reflexivity.
+      + intro x. lhs napply (concat_p1 _). rhs napply (concat_1p _).
+        lhs napply (ap02 cof2_equiv_map (Susp_rec_beta_merid x)).
+        lhs apply
+          (ap_ap_comp_V cof2_equiv_map (ptd_cofib_2 f) (cfglue f x) (cfglue (ptd_cofib f) (f x))).
+        lhs napply
+          (inverse2 (cofiber_rec_beta_cfglue (f := f) (null := (North; fun x : X => (merid x)^)) x) @@
+             cofiber_rec_beta_cfglue
+             (f := cofib f) (g := ext_glue_cof f) (null := (South; fun _ : Y => 1))
+             (f x)).
+        lhs napply (concat_p1 _); cbn. exact (inv_V (merid x)).
+    - snapply cofiber_ind_FlFr.
+      + reflexivity.
+      + snapply cofiber_ind_FlFr.
+        * reflexivity.
+        * simpl. intro y. (exact ((cfglue (cofib f) y)^)).
+        * intro x. lhs napply (concat_p1 _).
+          lhs napply (ap_compose' _ cof2_equiv_revmap (cfglue f x)).
+          lhs napply (ap02 cof2_equiv_revmap (cofiber_rec_beta_cfglue (f := f) x)); cbn.
+          lhs napply (ap_V _ (merid x)).
+          lhs napply (inverse2 (Susp_rec_beta_merid x)).
+          exact (inv_Vp  _ _).
+      + intro y; simpl. lhs napply (concat_p1 _).
+        lhs napply (ap_compose cof2_equiv_map cof2_equiv_revmap (cfglue (cofib f) y)).
+        lhs napply (ap02 cof2_equiv_revmap (cofiber_rec_beta_cfglue (f := cofib f) y)).
+        cbn. rhs napply (whiskerL _ (ap_idmap _)).
+        symmetry. exact (concat_Vp _).
+  Qed.
 
+  Lemma cof2_equiv : pcof2 <~>* psusp X.
+  Proof.
+    snapply Build_pEquiv.
+    - exact cof2_equiv_map.
+    - exact cof2_isequiv.
+  Defined.
+  
 End Cof2Equiv.
 
 (** We have a pointed equivalence between the cofiber of X \/ Y -> X ⊔_Z Y and Susp Z. *)
@@ -242,7 +282,7 @@ Proof.
     + snapply Pushout_ind_FlFr.
       * intro x. simpl. exact ((cfglue reglue_str (wedge_inl x))^).
       * intro y. simpl. exact ((cfglue reglue_str (wedge_inr y))^).
-      * intro z. simpl. <lhs napply (whiskerR _ _).
+      * intro z. simpl. lhs napply (whiskerR _ _).
         -- lhs napply (ap_compose (ext_glue f_idp g_idp) cofreglue_susp_map_str_rev
                          (pglue z)).
            lhs napply (ap02 cofreglue_susp_map_str_rev (functor_pushout_beta_pglue z)).

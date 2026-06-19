@@ -1194,6 +1194,15 @@ Proof.
   exact ((ap_compose g f q)^).
 Defined.
 
+(** A second variant of [ap_Vp] where the first path is an "ap." *)
+Definition ap_ap_comp_V {A B C : Type} (f : A -> B) (g : C -> A) {a0 : A} {c0 c1 : C} (p : c0 = c1) (q : g c0 = a0)
+  : ap f ((ap g p)^ @ q) = (ap (f o g) p)^ @ ap f q.
+Proof.
+  lhs apply (ap_Vp f (ap g p) q).
+  apply (ap (fun r => r^ @ ap f q)).
+  exact ((ap_compose g f p)^).
+Defined.
+
 (** Some higher coherences *)
 
 Lemma ap_pp_concat_p1 {A B} (f : A -> B) {a b : A} (p : a = b)
