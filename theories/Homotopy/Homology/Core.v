@@ -46,6 +46,7 @@ Section Basepoint_ind.
   
   Lemma Homol_mor_bpind {X Y : pType} (f : X -> Y) {p q : f pt = pt} :
     fmap (C_obj n) (Build_pMap f p) == fmap (C_obj n) (Build_pMap f q).
+
   Proof.
     napply pointwise_paths_concat.
     + exact C_susp_fmap_rotate.
@@ -53,3 +54,39 @@ Section Basepoint_ind.
   Qed.
   
 End Basepoint_ind.
+
+(* Homology preserves equivalences *)
+(* TO DO: redo using wildcat equivalences stuff *)
+Definition Homol_pequiv_equiv
+  {X Y : pType}
+  `{Integers Z}
+  {z : Z}
+  {C : HomologyTheory}
+  (f : X <~>* Y)
+  : C_obj z X <~> C_obj z Y.
+Proof.
+  snapply equiv_adjointify.
+  - exact (fmap (C_obj z) f).
+  - exact (fmap (C_obj z) (pequiv_inverse f)).
+  - lhs_V' tapply (fmap_comp (C_obj z)).
+    rhs_V' tapply (fmap_id (C_obj z)).
+    tapply (fmap2 (C_obj z)).
+    apply peisretr.
+  - lhs_V' tapply (fmap_comp (C_obj z)).
+    rhs_V' tapply (fmap_id (C_obj z)).
+    tapply (fmap2 (C_obj z)).
+    apply peissect.
+Defined.
+
+Definition Homol_pequiv_GroupIsomorphism
+  {X Y : pType}
+  `{Integers Z}
+  {z : Z}
+  {C : HomologyTheory}
+  (f : X <~>* Y)
+  : GroupIsomorphism (C_obj z X) (C_obj z Y).
+Proof.
+  snapply Build_GroupIsomorphism.
+  - exact (fmap (C_obj z) f).
+  - apply Homol_pequiv_equiv.
+Defined.

@@ -1,10 +1,10 @@
 From HoTT Require Import Basics Classes.interfaces.integers abstract_algebra.
 From HoTT.WildCat Require Import Core Universe.
 Require Import Groups.Group ExactSeq.
-Require Import AbGroups.AbelianGroup.
+Require Import AbGroups.AbelianGroup Biproduct.
 Require Import Colimits.Pushout.
 Require Import Pointed.Core pCofiber pEquiv.
-Require Import Homotopy.Cofiber Wedge.
+Require Import Homotopy.Cofiber ExactSequence Wedge.
 Require Import Homology.Core.
 Require Import Types.Paths.
 
@@ -28,7 +28,7 @@ Section Alg_Homol_bin_wedge.
        H1 ----> G ----> H2        H1 <---- G <---- H2
 
   then there is a group isomorphism (j1,j2) : G <~> H1xH2. *)
-  Context {G H1 H2 : Group}
+  Context {G H1 H2 : AbGroup}
     {i1 : H1 $-> G}
     {i2 : H2 $-> G}
     {j1 : G $-> H1}
@@ -38,7 +38,7 @@ Section Alg_Homol_bin_wedge.
     (i1_j2_isexact : GrpIsExact i1 j2)
     (i2_j1_isexact : GrpIsExact i2 j1).
   
-  Lemma grp_prod_isequiv : IsEquiv (grp_prod_corec j1 j2).
+  Lemma ab_biprod_isequiv : IsEquiv (ab_biprod_corec j1 j2).
   Proof.
     apply isequiv_surj_emb.
     - apply BuildIsSurjection.
@@ -71,11 +71,11 @@ Section Alg_Homol_bin_wedge.
       symmetry; apply wpath.
   Qed.
 
-  Definition grp_prod_iso : GroupIsomorphism G (grp_prod H1 H2).
+  Definition ab_biprod_iso : GroupIsomorphism G (ab_biprod H1 H2).
   Proof.
     snapply Build_GroupIsomorphism.
-    - exact (grp_prod_corec j1 j2).
-    - exact grp_prod_isequiv.
+    - apply (ab_biprod_corec j1 j2).
+    - exact ab_biprod_isequiv.
   Defined.
 
 End Alg_Homol_bin_wedge.
@@ -90,21 +90,33 @@ Section Homol_bin_wedge.
   Local Definition wglue := @wglue X Y.
 
   (* For the map wedge_inl : X -> X\/Y, there is a pointed equivalence, pcofiber wedge_inl <~>* Y. *)
-  Definition cofl_to_r : pcofiber wedge_inl -> Y.
+  Definition cofl_r : pcofiber wedge_inl -> Y.
   Proof.
     snapply cofiber_rec.
     - exact wedge_pr2.
     - exists pt.
-      intro x.
-      reflexivity.
+      reflexivity.    
   Defined.
 
- Definition r_to_cofl : Y -> pcofiber wedge_inl.
+  Definition pmap_cofl_r : pcofiber wedge_inl ->* Y
+    := Build_pMap cofl_r idpath.
+      
+  Definition r_cofl : Y -> pcofiber wedge_inl.
+  Proof.    
+    exact (ptd_cofib wedge_inl o* wedge_inr).
+  Defined.  
+
+  Definition pmap_r_cofl : Y ->* pcofiber wedge_inl.
   Proof.
-    exact (cofib wedge_inl o wedge_inr).
+    snapply Build_pMap.
+    - apply r_cofl.
+    - unfold r_cofl.
+      rhs_V apply (point_eq (ptd_cofib wedge_inl)).
+      apply (ap (ptd_cofib wedge_inl)).
+      apply (point_eq wedge_inr).
   Defined.
-
-  Definition cofl_hpty : r_to_cofl o cofl_to_r == idmap.
+      
+  Definition cofl_hpty : r_cofl o cofl_r == idmap.
   Proof.
     snapply cofiber_ind.
     - snapply wedge_ind.
@@ -115,7 +127,7 @@ Section Homol_bin_wedge.
         reflexivity.
       + reflexivity.
       + simpl.
-        snapply (@dpath_path_FlFr _ _ (r_to_cofl o cofl_to_r o (cofib wedge_inl)) _ _ _ wglue _).
+        snapply (@dpath_path_FlFr _ _ (r_cofl o cofl_r o (cofib wedge_inl)) _ _ _ wglue _).
         rhs napply concat_p1.
         lhs napply concat_pp_p; lhs napply concat_pp_p; lhs napply concat_pp_p.
         lhs napply concat_1p.
@@ -123,10 +135,10 @@ Section Homol_bin_wedge.
         lhs napply concat_p_Vp.
         apply moveL_Mp; lhs napply concat_Vp.
         rhs apply (ap_compose'
-                     (cofl_to_r o (cofib wedge_inl))
-                     r_to_cofl
+                     (cofl_r o (cofib wedge_inl))
+                     r_cofl
                      wglue).
-        rhs napply (ap (ap r_to_cofl) (wedge_rec_beta_wglue _ _)).
+        rhs napply (ap (ap r_cofl) (wedge_rec_beta_wglue _ _)).
         reflexivity.
     - exists ((ap (cofib wedge_inl) wglue)^ @ cfglue wedge_inl pt); simpl.
       intro x.
@@ -135,28 +147,55 @@ Section Homol_bin_wedge.
       lhs napply concat_pp_p.
       apply moveL_pM.
       lhs napply concat_pp_V.
-      rhs snapply (ap (ap r_to_cofl) (cofiber_rec_beta_cfglue (f := pushl) _ x)); cbn.
+      rhs snapply (ap (ap r_cofl) (cofiber_rec_beta_cfglue (f := pushl) _ x)); cbn.
       reflexivity.
   Defined.
-
-  Definition cofl_r_equiv : Cofiber wedge_inl <~> Y.
+  
+  Definition r_cofl_equiv : Y <~> Cofiber wedge_inl.
   Proof.
     snapply equiv_adjointify.
-    - exact cofl_to_r.
-    - exact r_to_cofl.
+    - apply r_cofl.
+    - apply cofl_r.
+    - apply cofl_hpty.
     - reflexivity.
-    - exact cofl_hpty.
   Defined.
 
-  Definition cofl_r_pequiv : pcofiber wedge_inl <~>* Y.
+  Definition r_cofl_pequiv : Y <~>* pcofiber wedge_inl.
   Proof.
-    snapply Build_pEquiv'.
-    - exact cofl_r_equiv.
-    - reflexivity.
+    snapply Build_pEquiv.
+    - apply pmap_r_cofl.
+    - apply r_cofl_equiv.
   Defined.
 
+  (* From this pointed equivalence and the exactness axiom we get that the sequence of groups X $-> X\/Y $-> Y is exact. *)
+  Definition l_to_r_grpisexact : GrpIsExact (fmap (C_obj z) wedge_inl) (fmap (C_obj z) wedge_pr2).
+  Proof.
+    refine (grpisexact_square_if grp_iso_id grp_iso_id (Homol_pequiv_GroupIsomorphism r_cofl_pequiv) _ _).
+    - intro x; reflexivity.
+    - lhs_V' tapply (fmap_comp (C_obj z)).
+      tapply (fmap2 (C_obj z)).       
+      snapply Build_pHomotopy.
+      + intro w.
+        refine (moveR_equiv_M (wedge_pr2 w) (ptd_cofib wedge_inl w) _). 
+        simpl.
+        reflexivity.
+      + simpl.
+        rhs_V napply concat_p_pp; rhs napply concat_1p.
+        rhs_V napply concat_p_pp.
+        napply moveL_Mp.
+        rhs napply concat_pV.
+        napply moveR_Vp; rhs napply concat_p1.
+        unfold moveR_equiv_M; simpl.
+        lhs napply concat_1p.
+        lhs napply concat_pp_p; lhs napply concat_pp_p; lhs napply concat_1p.
+        lhs napply concat_p_pp; lhs napply concat_pp_V.
+        rhs napply (ap_V (cofib pushl)).
+        reflexivity.
+    - apply C_exactness.
+  Defined.
+  
   (* Similarily we have pcofiber wedge_inr <~>* X *)
-  Definition cofr_to_l : pcofiber wedge_inr -> X.
+  Definition cofr_l : pcofiber wedge_inr -> X.
   Proof.
     snapply cofiber_rec.
     - exact wedge_pr1.
@@ -164,12 +203,25 @@ Section Homol_bin_wedge.
       reflexivity.
   Defined.
 
-  Definition l_to_cofr : X -> pcofiber wedge_inr.
+  Definition pmap_cofr_l : pcofiber wedge_inr -> X
+    := Build_pMap cofr_l idpath.
+
+  Definition l_cofr : X -> pcofiber wedge_inr.
   Proof.
-    exact (cofib wedge_inr o wedge_inl).
+    exact (ptd_cofib wedge_inr o* wedge_inl).
   Defined.
 
-  Definition cofr_hpty : l_to_cofr o cofr_to_l == idmap.
+  Definition pmap_l_cofr : X ->* pcofiber wedge_inr.
+  Proof.
+    snapply Build_pMap.
+    - apply l_cofr.
+    - unfold l_cofr.
+      rhs_V apply (point_eq (ptd_cofib wedge_inr)).
+      apply (ap (ptd_cofib wedge_inr)).
+      apply (point_eq wedge_inl).
+  Defined.
+
+  Definition cofr_hpty : l_cofr o cofr_l == idmap.
   Proof.
     snapply cofiber_ind.
     - snapply wedge_ind.
@@ -180,7 +232,7 @@ Section Homol_bin_wedge.
         rhs_V apply (ap (cofib wedge_inr) wglue).
         reflexivity.
       + simpl.
-        snapply (@dpath_path_FlFr _ _ (l_to_cofr o cofr_to_l o (cofib wedge_inr)) _ _ _ wglue _).
+        snapply (@dpath_path_FlFr _ _ (l_cofr o cofr_l o (cofib wedge_inr)) _ _ _ wglue _).
         lhs napply concat_1p.
         apply moveL_Mp.
         rhs napply concat_pp_p; rhs napply concat_pp_p.
@@ -190,10 +242,10 @@ Section Homol_bin_wedge.
         rhs napply concat_pV.
         apply moveR_V1; rhs napply concat_p1.
         rhs apply (ap_compose'
-                     (cofr_to_l o (cofib wedge_inr))
-                     l_to_cofr
+                     (cofr_l o (cofib wedge_inr))
+                     l_cofr
                      wglue).
-        rhs napply (ap (ap l_to_cofr) (wedge_rec_beta_wglue _ _)).
+        rhs napply (ap (ap l_cofr) (wedge_rec_beta_wglue _ _)).
         reflexivity.
     - exists ((ap (cofib wedge_inr) wglue) @ cfglue wedge_inr pt); simpl.
       intro y.
@@ -202,62 +254,62 @@ Section Homol_bin_wedge.
       lhs napply concat_pp_p.
       apply moveL_pM.
       lhs napply concat_pp_V.
-      rhs snapply (ap (ap l_to_cofr) (cofiber_rec_beta_cfglue (f := pushr) _ y)); cbn.
+      rhs snapply (ap (ap l_cofr) (cofiber_rec_beta_cfglue (f := pushr) _ y)); cbn.
       reflexivity.
   Defined.
 
-  Definition cofr_l_equiv : Cofiber wedge_inr <~> X.
+  Definition l_cofr_equiv : X <~> Cofiber wedge_inr.
   Proof.
     snapply equiv_adjointify.
-    - exact cofr_to_l.
-    - exact l_to_cofr.
-    - reflexivity.
-    - exact cofr_hpty.
+    - apply l_cofr.
+    - apply cofr_l.
+    - apply cofr_hpty.
+    - reflexivity.    
   Defined.
 
-  Definition cofr_l_pequiv : pcofiber wedge_inr <~>* X.
+  Definition l_cofr_pequiv : X <~>* pcofiber wedge_inr.
   Proof.
-    snapply Build_pEquiv'.
-    - exact cofr_l_equiv.
-    - reflexivity.
+    snapply Build_pEquiv.
+    - apply pmap_l_cofr.
+    - apply l_cofr_equiv.
   Defined.
 
-  (*
-  Definition HomolGrpIso : GroupIsomorphism (C_obj z (pcofiber wedge_inl)) (C_obj z Y).
+  (* The following sequence is exact, Y $-> X\/Y $-> X *)
+  Definition r_to_l_grpisexact : GrpIsExact (fmap (C_obj z) wedge_inr) (fmap (C_obj z) wedge_pr1).
   Proof.
-    snapply Build_GroupIsomorphism.
-    - exact (fmap (C_obj z) cofl_r_pequiv).
-    - snapply Build_IsEquiv.
-      + exact (fmap (C_obj z) r_to_cofl).
+    refine (grpisexact_square_if grp_iso_id grp_iso_id (Homol_pequiv_GroupIsomorphism l_cofr_pequiv) _ _).
+    - intro x; reflexivity.
+    - lhs_V' tapply (fmap_comp (C_obj z)).
+      tapply (fmap2 (C_obj z)).       
+      snapply Build_pHomotopy.
+      + intro w.
+        refine (moveR_equiv_M (wedge_pr1 w) (ptd_cofib wedge_inr w) _). 
+        simpl.
+        reflexivity.
+      + simpl.
+        rhs_V napply concat_p_pp; rhs napply concat_1p.
+        rhs_V napply concat_p_pp; rhs napply concat_1p.
+        rhs napply concat_pV.
+        unfold moveR_equiv_M; simpl.
+        reflexivity.
+    - apply C_exactness.
+  Defined.
       
-  Definition l_to_r_isexact : GrpIsExact (fmap (C_obj z) wedge_inl) (fmap (C_obj z) wedge_pr2).
+  Theorem homol_preserves_coprod : GroupIsomorphism (C_obj z (X \/ Y)) (ab_biprod (C_obj z X) (C_obj z Y)).
   Proof.
-    destruct (C_exactness (n:=z) wedge_inl).
-    apply Build_GrpIsExact.
-    - intros w im; simpl.
-      
-      pose (im_sub_ker w im); simpl in s.
-      pose (fmap (C_obj z) cofl_r_pequiv).
-      apply h.
-*)
-      
-  Theorem homol_preserves_coprod : GroupIsomorphism (C_obj z (X \/ Y)) (grp_prod (C_obj z X) (C_obj z Y)).
-  Proof.
-    snapply grp_prod_iso.
+    snapply ab_biprod_iso.
     - exact (fmap (C_obj z) wedge_inl).
     - exact (fmap (C_obj z) wedge_inr).
     - exact (fmap (C_obj z) wedge_pr1).
     - exact (fmap (C_obj z) wedge_pr2).
-    - tapply transitive_pointwise_paths.
-      + apply symmetric_pointwise_paths.
-        exact (fmap_comp (C_obj z) wedge_inl wedge_pr1).
-      +
-        (* apply something like fmap2 so we can prove
-wpr1 o winl == idmap *)
-        pose (ap2 (fmap (C_obj)) wedge_pr1_inl).
-        pose (fmap2 (C_obj z) _ _ wedge_pr1_inl).
-        exact wedge_pr1_inl.
-      
+    - lhs_V' tapply (fmap_comp (C_obj z)).
+      tapply (fmap_id (C_obj z)).
+    - lhs_V' tapply (fmap_comp (C_obj z)).
+      lhs' tapply (fmap2 (C_obj z)).
+      + apply wedge_pr2_inr.
+      + tapply (fmap_id (C_obj z)).
+    - apply l_to_r_grpisexact.
+    - apply r_to_l_grpisexact.
+  Defined.
 
-End Homol_bin_wedge.                     
-*)
+End Homol_bin_wedge.

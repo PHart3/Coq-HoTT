@@ -65,13 +65,34 @@ Proof.
     + exact (ker_sub_im b ffibpath).
 Defined.
 
-(* This equivalence requires function extensionality? 
-Definition Equiv_IsExact_GrpIsExact {A B C : Group} {i : A $-> B} {f : B $-> C}
+(*
+Definition Equiv_IsExact_GrpIsExact `{Funext} {A B C : Group} {i : A $-> B} {f : B $-> C}
   : (IsExact (-1) i f) <~> (GrpIsExact i f).
 Proof.
   snapply equiv_equiv_iff_hprop.
-  - 
+  - admit. 
   - 
   - 
 Defined.
-*)
+ *)
+
+Definition grpisexact_square_if {A A' B B' C C' : Group}
+  {i : A $-> B} {i' : A' $-> B'}
+  {f : B $-> C} {f' : B' $-> C'}
+  (g : GroupIsomorphism A' A)
+  (h : GroupIsomorphism B' B)
+  (k : GroupIsomorphism C' C)
+  (p : h $o i' $== i $o g) (q : k $o f' $== f $o h)
+  {grpisexact : GrpIsExact i f}
+  : GrpIsExact i' f'.
+Proof.
+  napply IsExact_GrpIsExact.
+  refine (@isexact_square_if _ _ _ _ _ _ _ i i' f f' g h k _ _ _).
+  - snapply Build_pHomotopy.
+    + exact p.
+    + tapply center.
+  - snapply Build_pHomotopy.
+    + exact q.
+    + tapply center.
+  - exact (GrpIsExact_IsExact grpisexact).
+Defined.
