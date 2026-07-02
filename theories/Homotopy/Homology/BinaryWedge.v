@@ -189,8 +189,7 @@ Section Homol_bin_wedge.
         lhs napply concat_1p.
         lhs napply concat_pp_p; lhs napply concat_pp_p; lhs napply concat_1p.
         lhs napply concat_p_pp; lhs napply concat_pp_V.
-        rhs napply (ap_V (cofib pushl)).
-        reflexivity.
+        apply (inverse_ap (cofib pushl) _).
     - apply C_exactness.
   Defined.
   

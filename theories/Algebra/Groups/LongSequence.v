@@ -52,7 +52,7 @@ Coercion ls_iso_morphism : LSIsomorphism >-> LSMorphism.
 Definition ls_equiv {N : SuccStr} {A B : LS N} (ls_iso : LSIsomorphism A B) (n : N) : A n <~> B n :=
   Build_GroupIsomorphism _ _ (grp_hom A B ls_iso n) (is_iso A B ls_iso n).
 
-(** Isomorphism of long sequences preserves exactness 
+(** Isomorphism of long sequences preserves exactness  *)
 Lemma ls_iso_preserves_exact
   {N : SuccStr}
   {A : LES N}
@@ -78,7 +78,7 @@ Proof.
     exact p.
 
   - intros b p.
-    apply tr.
+(*    apply tr. *)
     
     set (q := (eissect (ls_equiv ls_iso n) ((ls_fn A n) ((ls_equiv ls_iso n.+1)^-1 b)))^
                 @ (ap (ls_equiv ls_iso n)^-1 ((sq_commute _ _ ls_iso n ((ls_equiv ls_iso n.+1)^-1 b))
@@ -93,4 +93,3 @@ Proof.
       exact ((sq_commute _ _ ls_iso n.+1 w)^ @ (ap (ls_equiv ls_iso n.+1) wpath) @ (eisretr (ls_equiv ls_iso n.+1) b)).
     + exact im_witness.    
 Qed.
-*)
